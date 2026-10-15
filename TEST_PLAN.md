@@ -1,58 +1,34 @@
-# YaarJam Phase 03 — Test Plan
+# YaarJam V1 — Release Test Plan
 
-## Automated tests
+## Automated checks (must pass in GitHub Actions)
+1. `npm test`
+2. `npm run build`
+3. No secrets accidentally committed; only the browser-safe Supabase publishable key can appear in frontend config.
 
-From a network-enabled environment with Node.js 22+: run `npm install`, `npm test`, and `npm run build`. GitHub Actions runs tests and build before deployment.
+## Database verification
+Run `supabase/tests/v1_verification.sql` in the selected YaarJam Supabase project. It must return successfully and report 5 tables, 5 RLS-enabled tables, 4 realtime tables and 20 enabled prompts. Verify RPC permission checks and hardening indexes.
 
-The new `src/lib/tic-tac-toe.test.ts` Vitest suite covers:
-- Empty board initialization.
-- Valid move and immutable board input.
-- Invalid indexes and occupied-cell rejection.
-- Horizontal, vertical and diagonal win detection.
-- Winning-line highlight data.
-- Draw detection.
-- Rejecting a move after a round has ended.
-- Player ID to X/O mapping.
-- Normalizing malformed database board values.
+## Two-device manual QA
+Use two different devices or independent browsers with separate guest sessions.
 
-The rules module was compiled in isolation with global `tsc`, and 12 independent rule-level checks passed. All TS/TSX files passed syntax transpilation. The Vitest suite and complete build remain unverified because npm registry access timed out in this environment.
+| Area | Test | Expected result |
+|---|---|---|
+| Auth | Open site after enabling Anonymous Sign-Ins | Guest session starts, no password needed |
+| Create | Device A creates a supported room | Room code appears and creator is listed |
+| Join | Device B enters code/invite link | Both devices show the same room/player list |
+| Lobby | B joins and A watches | Realtime player count/name updates |
+| TTT turn | Current player taps an empty cell | Other phone sees move, turn changes |
+| TTT invalid | Wrong player or occupied cell attempts move | Server rejects it, board unchanged |
+| TTT result | Test all win lines and a draw | One consistent result displayed |
+| Rematch | Only one player requests | Old board remains; waiting state shown |
+| Rematch | Both players request | Board resets and X/O roles swap |
+| Truth/Dare | Current user chooses Truth or Dare | Same prompt appears on both devices |
+| Truth/Dare turn | Another user tries choosing or resolving | Server rejects out-of-turn call |
+| Done/Skip | Current user completes/skips | One counter increments, turn moves once |
+| Refresh | Refresh one device during lobby/game | State restores from database |
+| Leave | Player leaves; host leaves | Membership updates and host transfers/closes room |
+| Planned games | Select Ludo/Chess/Would You Rather/Partner Quiz | Clearly shown as planned; room creation is blocked |
+| Error path | Invalid/expired/full room code | Friendly error; no blank game screen |
 
-## Demo mode (no backend)
-
-- [ ] Create a demo Tic Tac Toe room, select “Go to my rooms”, and confirm the board appears.
-- [ ] X and O can alternate moves on the same device.
-- [ ] A move can only fill an empty square.
-- [ ] Win by rows, columns and diagonals; winning cells highlight.
-- [ ] Reach a draw; it must be detected.
-- [ ] No move can be made after win/draw.
-- [ ] Play again resets the board and changes the starting mark.
-- [ ] UI clearly states that demo mode is not shared with other devices.
-- [ ] Verify the same flow on a narrow Android screen and a desktop browser.
-
-## Supabase SQL/migration
-
-- [ ] For a new project, run the complete `supabase/schema.sql`; for a Phase 02 project, run only `supabase/phase_03_tic_tac_toe.sql`.
-- [ ] Enable Anonymous Sign-Ins.
-- [ ] Verify the new table uses RLS, only room members can select game state, and direct client table writes are denied.
-- [ ] Verify only authenticated users can execute the game RPCs.
-- [ ] Check for SQL errors and check the realtime publication includes `tic_tac_toe_games`.
-
-## Online two-device game
-
-- [ ] Player A creates a Tic Tac Toe online room.
-- [ ] Player B joins with the invite link from a different phone/browser.
-- [ ] Both players see the same board and status.
-- [ ] First player is X; second player is O; X makes the first move.
-- [ ] The non-current player cannot make a move even if an API/RPC is called directly.
-- [ ] Occupied cells, indexes outside 0–8, and moves after round completion are rejected server-side.
-- [ ] Win/draw status and winning cells sync to both devices.
-- [ ] One rematch request waits; the second request resets the board and swaps X/O roles.
-- [ ] Refresh a device during a game and verify the current state is restored from Supabase.
-- [ ] A non-member cannot read or write another room's game state.
-- [ ] Closed/expired rooms cannot start or accept moves/rematch.
-- [ ] If either guest leaves mid-game, the remaining player returns to waiting state and a new guest can join cleanly.
-- [ ] No service-role key is included in source, environment examples or generated browser bundle.
-
-## Release criteria
-
-Do not call Phase 03 fully verified until Vitest and production build pass, SQL applies cleanly, and a two-device online round plus rematch passes.
+## Release decision
+Do not call V1 live/fully working until CI and the above two-device tests are all green.

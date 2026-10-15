@@ -1,3 +1,5 @@
+> Historical phase handoff. This note describes the state at that phase and is superseded by the current root-level `CURRENT_STATUS.md` and `PROJECT_MASTER.md` (V1.0.0).
+
 # Copy-paste handoff — YaarJam Phase 02
 
 **PROJECT:** YaarJam  

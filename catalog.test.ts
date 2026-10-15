@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { filterGames, games, isValidRoomCode, makeDemoRoomCode } from './catalog';
+import { filterGames, games, isPlayableGame, isValidRoomCode, makeDemoRoomCode } from './catalog';
 
 describe('game catalogue', () => {
-  it('includes the planned first-release games', () => {
+  it('marks only working game modes as playable in V1', () => {
     const ids = games.filter((game) => game.status === 'mvp').map((game) => game.id);
-    expect(ids).toContain('truth-dare-friends');
-    expect(ids).toContain('couple-truth-dare');
-    expect(ids).toContain('tic-tac-toe');
-    expect(ids).toContain('would-you-rather');
+    expect(ids.sort()).toEqual(['couple-truth-dare', 'tic-tac-toe', 'truth-dare-friends'].sort());
+    expect(isPlayableGame('truth-dare-friends')).toBe(true);
+    expect(isPlayableGame('couple-truth-dare')).toBe(true);
+    expect(isPlayableGame('tic-tac-toe')).toBe(true);
+    expect(isPlayableGame('would-you-rather')).toBe(false);
+    expect(isPlayableGame('partner-quiz')).toBe(false);
+    expect(isPlayableGame('ludo')).toBe(false);
+    expect(games.filter((game) => game.status === 'mvp').every((game) => isPlayableGame(game.id))).toBe(true);
   });
 
   it('filters by category', () => {

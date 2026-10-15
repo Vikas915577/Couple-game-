@@ -1,37 +1,32 @@
-# YaarJam — Current Status
+# YaarJam V1 — Current Status
 
-**Current phase:** Phase 03 — first playable game  
-**Version:** 0.3.0  
-**Updated:** 15 October 2026
+**Version:** 1.0.0  
+**Product state:** Combined V1 source package and Supabase schema installed.
 
-## Implemented in source
+## Included in V1
+- Phase 01: mobile-first catalogue, search, categories and lobby UI.
+- Phase 02: Supabase guest room create/join/leave, room codes, member list and realtime lobby.
+- Phase 03: online Tic Tac Toe with validated moves, win/draw and rematch; local demo fallback.
+- Phase 04: local Friends and Couples Truth or Dare.
+- Phase 05: shared Supabase Truth or Dare state, server prompt selection, turn validation, Done/Skip counters and reconnect refresh.
+- Preserved phase notes, master spec, changelog, bug log, SQL schema, security/performance test scripts and GitHub Pages workflow.
 
-- Kept the Phase 01/02 mobile-first catalogue, guest-room lobby, room codes, Supabase room RPCs, RLS and GitHub Pages workflow.
-- Added Tic Tac Toe local demo pass-and-play for trying the board without backend setup. This is one device only.
-- Added online Tic Tac Toe state schema and server RPCs: `start_ttt_game`, `play_ttt_move`, `request_ttt_rematch`.
-- Online moves are authorized and validated in PostgreSQL: room membership, active room, assigned player, current turn, cell range, occupied cell, game status, winner and draw.
-- Rematch requires each player to request; when both agree, X/O ownership swaps and the board resets.
-- Added realtime change subscription for online game state, refetch-after-subscribe recovery, board state labels, winning-line highlight and a responsive mobile layout.
-- Leaving mid-game resets the room to waiting so a new guest can join and start a new round.
-- Added pure TypeScript game rules and 10 Vitest tests in `src/lib/tic-tac-toe.test.ts`.
-- Added `supabase/phase_03_tic_tac_toe.sql` for existing Phase 02 deployments and appended that migration to `supabase/schema.sql` for fresh projects.
-- Updated README and phase-specific instructions.
+## Actual Supabase setup result
+- Applied migrations `yaarjam_v1_initial_schema` and `yaarjam_v1_release_scope_hardening` to `Vikas915577's Project` (`gvwmisqnepdlejhvacbm`). The separate `Winter arc` project was untouched. The verification SQL executed successfully.
+- Five expected tables exist; all five have RLS enabled; four realtime tables are registered; 20 prompts are seeded.
+- Checked RPC permissions (`anon` denied, `authenticated` permitted for intended game functions), pinned `search_path` on all 10 SECURITY DEFINER functions, disabled direct client table writes and confirmed 9 hardening indexes. The create/join RPCs now reject planned games and enforce the two-player limit for Tic Tac Toe/Couples.
+- Supabase advisors report intentional SECURITY DEFINER RPC warnings and informational unused-index messages for the new/empty database.
+- Remaining Auth task: enable Anonymous Sign-Ins in the dashboard; this connector can't toggle that setting.
 
-## Not implemented
+## Build / device QA status
+- TypeScript/TSX syntax checks, supplemental noUnused TypeScript check and the offline-compatible runner passed 26 cases (see `docs/QA_REPORT_V1.md`).
+- `npm install` cannot complete in this workspace because npm registry DNS times out; full dependency-backed Vitest and Vite production build are therefore not claimed as passed.
+- GitHub Actions is configured to run tests and build after upload. Two-device browser test is still pending.
 
-- Chess, Ludo, Truth or Dare and other game catalogue entries are not playable yet.
-- Chat, permanent user accounts, rate limiting/anti-bot protections, admin dashboard, push notifications and broad load testing are not implemented.
-- No user's Supabase project or credentials are configured in this authoring environment.
+## Current playable features
+- Online room lobby.
+- Online Tic Tac Toe.
+- Online Truth or Dare (once anonymous sign-in is enabled).
+- Local same-device demo mode.
 
-## Verification status
-
-- All `.ts`/`.tsx` source files passed TypeScript syntax transpilation: passed.
-- The game-rules module passed strict standalone TypeScript compilation: passed.
-- 12 independent rule-level checks executed against the compiled rules module: passed.
-- Supabase SQL, RLS, migrations and RPCs: authored but **not executed against a live Supabase project**.
-- `npm install` timed out contacting the npm registry. Therefore `npm test` (Vitest) and full `npm run build` were **not run successfully** here.
-- `tsc -b` attempted but could not type-check the whole app because React, Supabase and other package type declarations were not installed. Its missing-module errors are an environment/dependency blocker, not a passing build result.
-- GitHub Actions deployment and real two-phone gameplay: not yet run/verified.
-- UI browser QA and mobile layout across real devices: pending.
-
-Do not mark online gameplay as verified until dependencies install, Vitest and production build pass, the SQL migration executes cleanly, and a two-device match passes end-to-end.
+Ludo, Chess, Would You Rather and other catalogue games remain planned cards and do not yet have complete gameplay.

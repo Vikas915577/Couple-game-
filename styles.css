@@ -308,3 +308,26 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
   .ttt-player-card strong { font-size: 12px; }
   .ttt-tip, .ttt-rematch-button { grid-column: 1 / -1; }
 }
+
+/* Phase 04 — Truth or Dare, designed for phone-first pass-and-play. */
+.dare-panel { margin: 22px 0 28px; padding: 22px; background: linear-gradient(145deg, #fff9f4, #fff 65%); border: 1px solid #f4e6df; border-radius: 20px; box-shadow: 0 10px 28px rgba(90, 63, 85, .05); }
+.dare-couples { background: linear-gradient(145deg, #fff2f7, #fff 68%); border-color: #f6dce7; }
+.dare-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.dare-panel-heading h2 { margin: 0; color: #302b48; font: 800 23px/1.25 'Manrope', sans-serif; letter-spacing: -.7px; }
+.dare-panel-heading p:last-child { max-width: 520px; margin: 8px 0 0; color: #8e899e; font-size: 12px; line-height: 1.6; }
+.dare-mode-badge { flex: 0 0 auto; padding: 7px 9px; color: #7562cf; background: #f1edff; border-radius: 8px; font-size: 9px; font-weight: 800; letter-spacing: .6px; }
+.dare-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+.dare-stats > div { display: grid; gap: 5px; padding: 12px; background: rgba(255,255,255,.8); border: 1px solid #f0eaf2; border-radius: 12px; }
+.dare-stats strong { color: #453c66; font-size: 21px; }.dare-stats span { color: #9991a5; font-size: 10px; }
+.dare-current-player { display: flex; align-items: center; gap: 11px; padding: 13px; background: #fff; border: 1px solid #eee8f3; border-radius: 13px; }
+.dare-avatar { display: grid; place-items: center; width: 42px; height: 42px; color: #fff; background: linear-gradient(135deg, #a38bf2, #6c58d7); border-radius: 14px; font-size: 16px; font-weight: 800; }
+.dare-current-player div { display: grid; gap: 4px; }.dare-current-player small { color: #a39ab4; font-size: 9px; font-weight: 800; letter-spacing: 1px; }.dare-current-player strong { color: #39334f; font-size: 13px; }
+.dare-choice { padding: 25px 8px 10px; text-align: center; }.dare-choice > p { margin: 0 0 14px; color: #77718d; font-size: 13px; font-weight: 700; }.dare-choice > div { display: flex; justify-content: center; gap: 10px; }.dare-button { color: #a34f7c; background: #fff; border-color: #f1d5e3; }
+.dare-prompt-card { margin-top: 16px; padding: 22px; background: #fff; border: 1px solid #eee8f3; border-radius: 16px; text-align: center; }.dare-prompt-kind { display: inline-flex; padding: 6px 9px; border-radius: 7px; font-size: 9px; font-weight: 900; letter-spacing: .7px; }.dare-prompt-kind.truth { color: #6550ca; background: #f0edff; }.dare-prompt-kind.dare { color: #b35c83; background: #fff0f6; }
+.dare-prompt-card > p { max-width: 560px; margin: 18px auto 22px; color: #38324f; font: 800 20px/1.5 'Manrope', sans-serif; }.dare-prompt-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; }
+.dare-safety-note { display: flex; align-items: flex-start; gap: 7px; margin: 17px 0 0; color: #9790a3; font-size: 10px; line-height: 1.6; }.dare-safety-note svg { flex: 0 0 auto; margin-top: 1px; color: #8b7ad6; }
+@media (max-width: 620px) { .dare-panel { padding: 16px; border-radius: 16px; }.dare-panel-heading { display: block; }.dare-mode-badge { display: inline-flex; margin-top: 12px; }.dare-panel-heading h2 { font-size: 20px; }.dare-prompt-card { padding: 17px 13px; }.dare-prompt-card > p { font-size: 17px; }.dare-prompt-actions { display: grid; grid-template-columns: 1fr; }.dare-prompt-actions .button { width: 100%; } }
+
+/* Phase 05 — shared online Truth or Dare state. */
+.dare-mode-badge.ttt-live { background: #e4f8ee; color: #18704a; }
+.muted-copy { display: block; margin: 8px auto 0; max-width: 520px; color: #77718d; font-size: 12px; line-height: 1.55; }

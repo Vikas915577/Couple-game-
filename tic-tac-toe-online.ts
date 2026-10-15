@@ -9,7 +9,7 @@ interface RawTicTacToeState extends Omit<TicTacToeState, 'board' | 'status'> {
 function normalizeState(value: unknown): TicTacToeState {
   const raw = value as RawTicTacToeState | null;
   if (!raw || typeof raw.room_id !== 'string') {
-    throw new Error('Game state was not returned by Supabase. Check the Phase 03 SQL schema.');
+    throw new Error('Game state was not returned by Supabase. Check `supabase/schema.sql` and run `supabase/tests/v1_verification.sql`.');
   }
   const allowed: TicTacToeStatus[] = ['waiting', 'playing', 'x_won', 'o_won', 'draw'];
   if (!allowed.includes(raw.status as TicTacToeStatus)) throw new Error('The server returned an unknown game status.');

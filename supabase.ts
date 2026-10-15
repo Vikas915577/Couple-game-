@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() ?? '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() ?? '';
+// This is the dedicated YaarJam project. The URL and publishable key are public client config,
+// not secrets; all writes still require the secured database RPCs and RLS policies.
+const DEFAULT_SUPABASE_URL = 'https://gvwmisqnepdlejhvacbm.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nQjn2zxIl7J4deFztx3u-A_fyRvAEfo';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 

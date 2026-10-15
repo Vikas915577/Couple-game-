@@ -1,45 +1,37 @@
-# Start here — YaarJam Phase 03
+# YaarJam V1 — Start Here (simple steps)
 
-This package adds the first playable game: Tic Tac Toe. Read this first if you're uploading to GitHub from a phone.
+Bhai, pehle sirf ye steps follow karo. Is ZIP mein sab phases ka current combined code hai; purane phase ZIPs ko alag upload karne ki zarurat nahi.
 
-## 1. Upload to GitHub
+## Step 1 — Supabase ka ek setting on karo (one-time)
 
-1. Download and extract `YaarJam_Phase_03.zip`.
-2. Open your new GitHub repository.
-3. Upload the *contents* of the extracted folder. Do not upload only the ZIP file. Keep hidden `.github/workflows/deploy.yml` and all `src/` / `supabase/` files.
-4. Commit the files to `main`.
-5. Under **Settings → Pages**, set **Source** to **GitHub Actions**.
-6. Open **Actions** and review the build log. It must pass tests and build before deploying.
+1. Open the [YaarJam Supabase Authentication settings](https://supabase.com/dashboard/project/gvwmisqnepdlejhvacbm/auth/providers).
+2. Find **Anonymous Sign-Ins** (or the anonymous provider setting) and enable it.
+3. Save changes.
 
-Without Supabase secrets, the website uses demo mode. You can test Tic Tac Toe as pass-and-play on one device; cross-device play is not available in demo mode.
+I have already applied the database schema to the selected clean YaarJam project and verified the five tables/RLS/realtime registration. Your separate **Winter arc** database was not changed.
 
-## 2. Run tests/build where npm can reach the registry
+## Step 2 — ZIP ko GitHub par upload karo
 
-Install Node.js 22+ and run:
+1. Download and extract `YaarJam_V1.zip` on your computer.
+2. Create a new empty GitHub repository, for example `yaarjam`.
+3. Upload **the contents of the extracted `YaarJam_V1` folder** to the repository root. Do not upload just the ZIP; keep folders like `src`, `supabase`, and `.github`.
+4. Open repository **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+5. Open **Actions**. The workflow should install dependencies, run tests, build the site, and deploy it. If it fails, open the red workflow run and share the first error with ChatGPT.
 
-```bash
-npm install
-npm test
-npm run build
-```
+No GitHub Actions secrets are required for the selected YaarJam project: the public Supabase URL and publishable key are already configured as browser defaults. These are public client values, not the secret/service-role key.
 
-The authoring environment could not reach `registry.npmjs.org`, so the full dependency-backed tests/build were not verified here. Do not skip GitHub Actions results.
+## Step 3 — two-phone test
 
-## 3. Supabase setup
+1. Open the deployed website on your phone and create a room for **Tic Tac Toe** or **Truth or Dare**.
+2. Copy/share the room code or invite link to a friend.
+3. Have them open the link in another phone/browser and join with a different name.
+4. Check that the player list updates. For Tic Tac Toe, test turns/win/rematch. For Truth or Dare, test choosing Truth/Dare, shared prompt, Done/Skip and turn changes.
+5. Refresh one phone and confirm that the saved state returns.
 
-- New Supabase project: enable Anonymous Sign-Ins, then run the complete `supabase/schema.sql` in SQL Editor.
-- Existing Phase 02 project: run only `supabase/phase_03_tic_tac_toe.sql`.
-- Add the Project URL and publishable/anon key as repository Actions secrets named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-- Never use the service-role/secret key in frontend code or `VITE_*` variables.
+## If something fails
 
-## 4. Test online gameplay on two phones
+- `Anonymous sign-ins are disabled`: return to Step 1 and enable Anonymous Sign-Ins.
+- `relation/function does not exist`: open `supabase/schema.sql` and check that it was successfully applied to the selected YaarJam project. Don't run it on Winter arc.
+- Build fails: send the first red error from GitHub Actions; do not change random files.
 
-1. Phone A opens the deployed site and creates a Tic Tac Toe online room.
-2. Copy and send the invite link to Phone B.
-3. Phone B opens the link, uses a different guest name and joins.
-4. Check that both see two room members. Play alternating X/O moves.
-5. Confirm invalid moves are rejected, winner/draw syncs, refresh restores the board, and both players must request a rematch.
-
-## Honest status
-
-12 rule-level checks and all TypeScript/TSX syntax transpilation passed in the build environment. Full Vitest/Vite build, Supabase SQL and actual two-phone tests remain pending.
+The catalogue shows more games than currently playable. V1's real online game modes are Tic Tac Toe and Truth or Dare; Ludo/Chess/other rounds are future work.

@@ -60,7 +60,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '🤔',
     theme: 'lavender',
-    status: 'mvp',
+    status: 'planned',
     tags: ['party', 'votes', 'questions'],
   },
   {
@@ -72,7 +72,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '🫶',
     theme: 'mint',
-    status: 'mvp',
+    status: 'planned',
     tags: ['couple', 'quiz', 'date night'],
   },
   {
@@ -160,6 +160,14 @@ export const games: GameDefinition[] = [
     tags: ['party', 'team', 'word'],
   },
 ];
+
+
+// One source of truth for game routes that have actual gameplay in V1.
+// Catalogue cards can list future ideas, but must never create an empty/non-working room for them.
+export const playableGameIds = ['truth-dare-friends', 'couple-truth-dare', 'tic-tac-toe'] as const;
+export function isPlayableGame(id: string): boolean {
+  return (playableGameIds as readonly string[]).includes(id);
+}
 
 export const categoryLabels: Record<GameCategory, string> = {
   all: 'All games',

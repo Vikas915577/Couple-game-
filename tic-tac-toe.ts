@@ -71,6 +71,11 @@ export function markForUser(state: Pick<TicTacToeState, 'x_user_id' | 'o_user_id
 }
 
 export function normalizeBoard(value: unknown): Board {
-  if (!Array.isArray(value) || value.length !== 9) return emptyBoard();
-  return value.map((cell): Cell => (cell === 'X' || cell === 'O' ? cell : null));
+  if (!Array.isArray(value)) return emptyBoard();
+  // Be defensive with stale/malformed backend data: preserve valid cells, discard
+  // unknown values, and always return exactly nine cells to keep the board render safe.
+  return Array.from({ length: 9 }, (_, index): Cell => {
+    const cell = value[index];
+    return cell === 'X' || cell === 'O' ? cell : null;
+  });
 }

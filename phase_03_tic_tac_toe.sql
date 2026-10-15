@@ -17,6 +17,11 @@ create table if not exists public.tic_tac_toe_games (
   constraint ttt_players_distinct check (x_user_id is null or o_user_id is null or x_user_id <> o_user_id)
 );
 
+create index if not exists tic_tac_toe_games_x_user_id_idx on public.tic_tac_toe_games(x_user_id);
+create index if not exists tic_tac_toe_games_o_user_id_idx on public.tic_tac_toe_games(o_user_id);
+create index if not exists tic_tac_toe_games_current_turn_idx on public.tic_tac_toe_games(current_turn_user_id);
+create index if not exists tic_tac_toe_games_winner_user_idx on public.tic_tac_toe_games(winner_user_id);
+
 alter table public.tic_tac_toe_games enable row level security;
 revoke all on public.tic_tac_toe_games from public, anon, authenticated;
 grant select on public.tic_tac_toe_games to authenticated;
