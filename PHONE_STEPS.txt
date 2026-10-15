@@ -1,0 +1,42 @@
+YAARJAM HOTFIX — PHONE STEPS (READ FIRST)
+
+The blank site is still live because this fix package has NOT been applied to GitHub yet.
+
+Repository:
+https://github.com/Vikas915577/Couple-game-/
+
+QUICKEST METHOD IF YOU HAVE A TERMINAL / CODESPACE
+1. Extract this ZIP.
+2. Put apply_fix.py and this ZIP's config/workflow files in the repository checkout folder.
+3. Run: python3 apply_fix.py .
+4. Run: npm install
+5. Run: npm test
+6. Run: npm run build
+7. Commit the changed files and push them to main.
+8. In GitHub Settings > Pages, choose "GitHub Actions" as the Source.
+9. Check Actions for workflow "Test and deploy YaarJam to GitHub Pages".
+
+MANUAL METHOD IN CHROME ON ANDROID
+Do these changes in the GitHub repository UI (not by just uploading this ZIP as a file):
+1. Replace index.html contents with the ZIP's index.html.
+2. Replace tsconfig.app.json contents with the ZIP's tsconfig.app.json.
+3. Replace vite.config.ts contents with the ZIP's vite.config.ts.
+4. Edit App.tsx. Replace each of these six strings:
+   './lib/supabase' -> './supabase'
+   './lib/rooms' -> './rooms'
+   './lib/tic-tac-toe' -> './tic-tac-toe'
+   './lib/tic-tac-toe-online' -> './tic-tac-toe-online'
+   './lib/truth-or-dare' -> './truth-or-dare'
+   './lib/truth-or-dare-online' -> './truth-or-dare-online'
+5. Add a new file named exactly `.github/workflows/deploy.yml` and paste the ZIP's `.github/workflows/deploy.yml` contents.
+6. Commit changes to the main branch.
+7. Open Settings > Pages and set Source = GitHub Actions.
+8. In Actions, open the NEW run named "Test and deploy YaarJam to GitHub Pages".
+   Continue only if "Run unit tests", "Build site", and "Deploy to GitHub Pages" all pass.
+
+Important:
+- Do NOT just upload the ZIP to the repository. That won't install the fixes.
+- Existing root `deploy.yml` can be left in place; GitHub ignores it as a workflow because it is not inside `.github/workflows/`.
+- This package does not replace Supabase config/schema or delete your app code.
+- Full npm tests/build and two-device multiplayer still need to pass after the changes.
+- The connected GitHub integration returned 403 when attempting to commit changes directly, so the fix has not yet been committed for you.
