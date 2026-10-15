@@ -1,0 +1,23 @@
+APP.TSX IMPORT FIXES
+
+In App.tsx, change ONLY these import paths. Keep all names and the rest of each import exactly the same:
+
+FROM: from './lib/supabase'
+TO:   from './supabase'
+
+FROM: from './lib/rooms'
+TO:   from './rooms'
+
+FROM: from './lib/tic-tac-toe'
+TO:   from './tic-tac-toe'
+
+FROM: from './lib/tic-tac-toe-online'
+TO:   from './tic-tac-toe-online'
+
+FROM: from './lib/truth-or-dare'
+TO:   from './truth-or-dare'
+
+FROM: from './lib/truth-or-dare-online'
+TO:   from './truth-or-dare-online'
+
+Why: the current repository has these source files at the repository root, not inside a lib/ folder.

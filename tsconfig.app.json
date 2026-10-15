@@ -17,5 +17,15 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": [
+    "App.tsx",
+    "main.tsx",
+    "catalog.ts",
+    "supabase.ts",
+    "rooms.ts",
+    "tic-tac-toe.ts",
+    "tic-tac-toe-online.ts",
+    "truth-or-dare.ts",
+    "truth-or-dare-online.ts"
+  ]
 }
