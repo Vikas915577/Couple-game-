@@ -1,26 +1,27 @@
-name: Test and deploy YaarJam to GitHub Pages
+name: Test and deploy YaarJam V1
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: github-pages
+  group: yaarjam-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test-and-build:
+  build-and-test:
+    name: Test and production build
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Set up Node.js
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -28,26 +29,30 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Run unit tests
         run: npm test
-      - name: Build site
+      - name: Build website
         run: npm run build
       - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
 
   deploy:
-    if: github.event_name != 'pull_request'
-    needs: test-and-build
+    name: Deploy to GitHub Pages
+    needs: build-and-test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Publish tested website
         id: deployment
         uses: actions/deploy-pages@v4

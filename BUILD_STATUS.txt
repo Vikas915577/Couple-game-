@@ -1,0 +1,12 @@
+STATIC PACKAGE VALIDATION: PASS
+- Full project source included (47 files before bundle helper files).
+- src/main.tsx entry point exists.
+- .github/workflows/deploy.yml exists.
+- Relative local import paths resolve.
+- Old broken root-level duplicate files are removed by the install script.
+
+NOT VERIFIED LOCALLY
+- npm install timed out in this environment while trying to access the package registry.
+- Therefore npm test and npm run build were not run successfully here.
+- The included GitHub Actions workflow runs these checks on push; only a green workflow is proof of a successful remote build.
+- Two-device live multiplayer has not been re-tested as part of this packaging task.

@@ -1,11 +1,14 @@
-# Upload YaarJam V1 to GitHub Pages
+# Upload / Repair YaarJam V1
 
-1. Extract `YaarJam_V1.zip`.
-2. Create an empty GitHub repository.
-3. Upload the contents of the extracted `YaarJam_V1` folder to the repository root (include `.github`, `src`, `supabase`, and config files).
-4. Go to Settings → Pages → Source → GitHub Actions.
-5. Open Actions and verify the build/tests pass and deployment completes.
+The app must keep this folder layout in the repository root:
 
-The Supabase public URL and publishable key are preconfigured as source defaults. No GitHub secrets are required for the selected project unless you want to override the config.
+- `src/App.tsx`, `src/main.tsx`, `src/styles.css`, `src/catalog.ts`
+- `src/lib/` for Supabase, rooms, Tic Tac Toe, and Truth or Dare modules
+- `supabase/` for schema and verification SQL
+- `.github/workflows/deploy.yml` for automated tests/build/deploy
 
-For online rooms, first enable Anonymous Sign-Ins in the project's Auth settings. The V1 database schema is already applied to the selected project; don't run `schema.sql` again there. See `SUPABASE_STATUS.md` and `START_HERE.md`.
+Do not upload only the source files flat into the repository root. The Vite config expects the `src/` structure.
+
+For phone-first repair steps, see `PHONE_GUIDE.md` and the external `PHONE_FIX_GUIDE_HINDI.txt` included in the complete fixed bundle. GitHub Pages must use **Settings → Pages → Source → GitHub Actions**.
+
+Required remote checks: `npm test` and `npm run build`; the published site should only be considered fixed once GitHub Actions is green and the live website loads.

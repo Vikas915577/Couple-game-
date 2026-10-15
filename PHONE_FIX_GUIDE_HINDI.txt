@@ -1,0 +1,78 @@
+YAARJAM V1 — COMPLETE GITHUB PAGES FIX (ANDROID PHONE GUIDE)
+===========================================================
+
+Website: https://vikas915577.github.io/Couple-game-/
+Repository: https://github.com/Vikas915577/Couple-game-/
+
+WHY IT WAS BLANK
+----------------
+The app source was uploaded flat into the repository root. But the app expects
+src/ and src/lib/ folders; tests/config also expect src/, and the deployment
+workflow must be inside .github/workflows/. This bundle restores the complete
+source tree with the original games and Supabase client configuration.
+
+THIS IS A WEBSITE PACKAGE
+------------------------
+It is a React/Vite website for GitHub Pages, not an Android APK. It keeps the
+existing source, Tic Tac Toe, Friends/Couples Truth or Dare, and Supabase setup.
+The script changes repository files only; it does not alter the remote database.
+
+ONE-TIME INSTALL ON YOUR PHONE (USING GITHUB CODESPACES)
+--------------------------------------------------------
+A ZIP uploaded to GitHub is NOT automatically extracted. To make the site live,
+use Codespaces to extract the bundle and commit the corrected files.
+
+1) Download this ZIP to your phone.
+2) Open your repository in Chrome:
+   https://github.com/Vikas915577/Couple-game-/
+3) Tap Add file > Upload files, upload this ZIP with its original filename
+   YaarJam_GitHub_Pages_Fixed_Bundle.zip, and commit the upload to main.
+4) Go back to the Code tab. Tap the green Code button > Codespaces > Create
+   codespace on main. Wait for the browser editor and terminal to open.
+5) In Terminal, paste these two commands exactly:
+
+   unzip -q YaarJam_GitHub_Pages_Fixed_Bundle.zip -d /tmp/yaarjam-fix
+   bash /tmp/yaarjam-fix/INSTALL_TO_THIS_REPO.sh "$PWD" "$PWD/YaarJam_GitHub_Pages_Fixed_Bundle.zip"
+
+6) The script restores all folders, removes the old duplicate flat source files,
+   commits and pushes the corrected source. GitHub Actions then installs packages,
+   runs npm test, runs npm run build, and deploys only if all stages pass. Do not
+   refresh the live website before the Actions workflow completes.
+7) Open Actions:
+   https://github.com/Vikas915577/Couple-game-/actions
+   Wait for the run called “Test and deploy YaarJam V1”. The test/build/deploy
+   stages must all be green.
+8) Open Pages settings:
+   https://github.com/Vikas915577/Couple-game-/settings/pages
+   In Build and deployment, set Source to “GitHub Actions”.
+9) Open the website again in Chrome Incognito, or refresh after clearing its cache:
+   https://vikas915577.github.io/Couple-game-/
+
+IF A STEP FAILS
+---------------
+- If Codespaces is missing or says you have no remaining usage, don't upload the
+  ZIP as a replacement for the app; that only stores a ZIP file. The source must
+  be extracted and committed with folders preserved. A computer with Git is an
+  alternative.
+- If the GitHub Actions test/build fails, deployment will be stopped automatically.
+  Open the failed job and send the first red error so it can be fixed.
+- If tests/build pass but deployment doesn't run, check Pages Source = GitHub
+  Actions and then review the failed job in Actions.
+- The GitHub connector used by the assistant returned 403 when writing files, so
+  this ZIP has not been automatically committed to your repo by the assistant.
+
+SUPABASE
+--------
+This keeps the existing YaarJam Supabase URL/key in src/lib/supabase.ts and the
+SQL/schema documents under supabase/. Do not run the schema again in the already
+configured project. If guest login still fails, enable Anonymous Sign-Ins here:
+https://supabase.com/dashboard/project/gvwmisqnepdlejhvacbm/auth/providers
+Never use a service-role/secret key in frontend code.
+
+HONEST STATUS
+-------------
+The archive contains the complete corrected source tree and a workflow to run
+real unit tests/build on GitHub. npm package installation timed out in the local
+workspace, so local build/test success is NOT claimed. Codespaces will run them;
+the website should be considered fixed only after those checks and the live page
+show the app.
