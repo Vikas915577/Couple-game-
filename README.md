@@ -1,78 +1,91 @@
-# YaarJam — Phase 02: private realtime rooms
+# YaarJam — Phase 03: first playable online game
 
-**Tagline:** Apne log. Apna game.
+**Tagline:** Apne log. Apna game.  
+**Version:** `0.3.0`  
+**State:** Tic Tac Toe gameplay source is implemented. Full dependency-backed build and live Supabase QA are still pending.
 
-Phase 02 keeps the mobile-first Phase 01 interface and adds the first backend foundation: anonymous guest sessions, Supabase-backed room creation and joining, room-member list, host handoff/leave handling, invite codes/links, and realtime lobby refreshes.
+## What changed in Phase 03
 
-## What is and is not working in this phase
+- Tic Tac Toe is now playable locally in the browser's demo room (same-device pass-and-play only).
+- Configured online rooms use Supabase RPCs for starting the game, accepting a move, deciding win/draw, and requesting a rematch.
+- Server-side move validation checks room membership, whose turn it is, occupied cells, valid cell indices, finished games, and expired/closed rooms.
+- A second player must join before an online round starts. Each player gets X or O, and the game state updates in realtime.
+- Rematch requires both players to agree, and X/O roles switch on the next round.
+- Added a responsive board, current-turn status, player labels, winning-cell highlight, rematch request state, and readable errors.
+- Added the separate migration `supabase/phase_03_tic_tac_toe.sql`; also included it in the all-in-one `supabase/schema.sql` for fresh projects.
+- Added 10 Vitest cases covering board rules, win/draw logic, invalid moves, rematch-related state mapping, and backend-board normalization. The suite is written but the Vitest runner could not execute here because dependencies could not be installed.
 
-**Implemented in source:**
-- Create an online room through a Supabase RPC.
-- Join by a six-to-eight character room code or an invite URL (`?room=CODE`).
-- Guest display name (no email/password), max player count, room open/closed status, and a 12-hour room expiry.
-- Room player list refresh through Supabase Realtime Postgres Changes.
-- Leave a room; if the host leaves, the oldest remaining player becomes host. Empty rooms close.
-- RLS-protected read access. All table writes are through narrowly scoped RPC functions; the browser has no service-role key.
-- A local demo fallback when environment values are absent, so the website shell can still be explored before backend setup.
-- GitHub Pages Actions deployment workflow; its build runs tests before deploying.
+## What is still not implemented
 
-**Not implemented yet:** playable game rounds, turn/move synchronization, permanent profiles, chat, push notifications, anti-abuse rate limiting, and comprehensive browser/device QA. Ludo and Chess catalogue cards are still not playable in this phase. A live multiplayer claim applies only to room/lobby membership, after Supabase is configured.
+Chess, Ludo, Truth or Dare, couple quizzes and other catalogue games remain not playable. User profiles, chat, rate limiting, production anti-abuse controls, broad browser testing and load testing remain future work. This phase is one game, not the full product.
 
-## Quick local preview (no Supabase required)
+## Run locally
 
 Requirements: Node.js 22+ and npm.
 
 ```bash
 npm install
+npm test
+npm run build
 npm run dev
 ```
 
-Open the localhost URL printed by Vite. Without `.env.local`, the app says **DEMO MODE** and only creates local preview rooms.
+The current authoring environment timed out while contacting the npm registry, so no successful package-backed build is claimed here. GitHub Actions is configured to install dependencies, run Vitest and perform `npm run build` before deploying.
 
-## Enable real rooms with a free Supabase project
+## Demo mode (no Supabase credentials)
 
-1. Create a Supabase project at <https://supabase.com/dashboard>.
-2. In **Authentication settings**, enable **Anonymous Sign-Ins**. The app uses anonymous guest accounts; if a user clears browser storage or changes devices, their anonymous identity does not transfer. They can still join a room on another device as a different guest.
-3. Open **SQL Editor** in Supabase, open this repo's `supabase/schema.sql`, paste the full file and run it. Check for any SQL errors before proceeding.
-4. In the project's API/Connect settings, copy the **Project URL** and the browser-safe **publishable key** (or legacy `anon` key). Do not use the `service_role`/secret key.
-5. For local testing, copy `.env.example` to `.env.local` and replace the placeholders:
+1. Run `npm install` and `npm run dev`.
+2. Open the local URL from Vite.
+3. Create a Tic Tac Toe room and choose **Go to my rooms**.
+4. The board is playable as same-device pass-and-play. It does **not** share moves with another device.
 
-   ```dotenv
-   VITE_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
-   VITE_SUPABASE_ANON_KEY=YOUR_PUBLISHABLE_OR_ANON_KEY
-   ```
+## Enable real online games using Supabase
 
-6. Restart `npm run dev`. The top status should become **LIVE ROOMS** after the guest session starts.
-7. Open the site on two different devices/browsers. On device A, create a room. Copy the code or invite link. On device B, open the site/link, enter a different display name, and join. Both lobby player lists should update. This only tests the room lobby, not a playable board-game round.
+### For a new Supabase project
 
-## Deploy to GitHub Pages from an uploaded ZIP
+1. Create a project at <https://supabase.com/dashboard>.
+2. Enable **Anonymous Sign-Ins** in Authentication settings.
+3. Open **SQL Editor**, paste the full `supabase/schema.sql` and execute it. Review any SQL errors.
+4. Copy the Project URL and the browser-safe publishable key (or legacy `anon` key). Never use a `service_role` or secret key in the browser.
+5. For local development, create `.env.local` based on `.env.example` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+6. Restart `npm run dev`; the top status should read **LIVE ROOMS** after guest auth succeeds.
 
-1. Download and extract `YaarJam_Phase_02.zip`.
-2. Create a new **public** GitHub repository (GitHub Free includes Pages for public repositories). Upload the **contents** of the extracted folder, not the ZIP file itself. Commit the files to `main` (or `master`). Keep the hidden `.github/workflows/deploy.yml` file in the repository; a ZIP uploaded as a single file will not be built or deployed.
-3. For **demo-only** GitHub Pages, skip the Supabase setup below. The workflow builds a demo version.
-4. For real rooms, go to **Repository → Settings → Secrets and variables → Actions → New repository secret** and add:
-   - `VITE_SUPABASE_URL` = your Supabase Project URL
-   - `VITE_SUPABASE_ANON_KEY` = your Supabase publishable/anon browser key
-5. Go to **Repository → Settings → Pages** and set **Build and deployment → Source → GitHub Actions**.
-6. Open the **Actions** tab. Wait for the `Build and deploy YaarJam to GitHub Pages` workflow to pass. The workflow runs `npm test` and `npm run build` before deploying.
-7. Open the published Pages URL on two separate devices. Run the same create/join test above.
+### If you already applied Phase 02 SQL
 
-The frontend key is public by design; actual data protection is provided by the RLS policies and RPC functions in `supabase/schema.sql`. Never add a Supabase service-role key to repository files, GitHub Actions `VITE_*` variables, or frontend code.
+Run **only** `supabase/phase_03_tic_tac_toe.sql` in the Supabase SQL Editor, after the Phase 02 schema is already installed. Do not replace a live project's schema manually without reviewing the migration and backup strategy.
 
-## Local checks
+### Test from two separate phones
+
+1. Configure both devices to open the same deployed site; with GitHub Pages, add repository Actions secrets named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` before running the deployment workflow.
+2. On phone A, create a **Tic Tac Toe** online room and copy the invite link.
+3. On phone B, open the link, choose a different display name, and join.
+4. Confirm both room lobbies show two players, then play alternating moves. Moves, wins/draws and rematch requests should sync on both screens.
+5. Test wrong-turn taps, occupied cells, refresh/reconnect, both players requesting a rematch, and a room that has closed/expired.
+
+Online play is not verified until the SQL runs cleanly and the two-device test passes. The frontend never contains a service-role key; database writes are only through scoped RPC functions and reads are RLS-protected to room members.
+
+## GitHub Pages deploy
+
+1. Extract the ZIP and upload the **contents of the extracted folder**, not the ZIP file itself, into a new repository. Keep the hidden `.github/workflows/deploy.yml` path.
+2. Optional for online play: add the two Supabase variables under **Settings → Secrets and variables → Actions**.
+3. Set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+4. Open **Actions** and verify the build workflow passes tests and production build before deployment.
+5. Open the published Pages URL. Without Supabase secrets it will be demo mode only.
+
+## QA commands
 
 ```bash
 npm test
 npm run build
 ```
 
-A completed GitHub Actions deployment is the easiest independent build/test check when local package installation is unavailable. If the workflow fails, open the failed job log and check the first failing step before trying to deploy again.
+The rule module was independently compiled with the global TypeScript compiler and 12 rule-level checks passed. All TS/TSX files passed syntax transpilation. This is **not** a substitute for the missing Vitest run, full Vite production build, SQL execution, or actual two-phone browser QA.
 
-## Files to keep updated
+## Project docs
 
-- `PROJECT_MASTER.md` — agreed scope and architecture.
-- `CURRENT_STATUS.md` — what is complete and what is not.
-- `TEST_PLAN.md` — repeatable manual and automated tests.
-- `BUGS.md` — known issues / QA blockers.
-- `CHANGELOG.md` — version history.
-- `supabase/schema.sql` — database schema and access rules.
+- `PROJECT_MASTER.md` — master specification and Phase 03 addendum
+- `CURRENT_STATUS.md` — verified, unverified, and pending work
+- `TEST_PLAN.md` — automated and manual cases
+- `BUGS.md` — known blockers
+- `CHANGELOG.md` — phase history
+- `docs/PHASE_03_NOTE.md` — short handoff note for the next chat

@@ -1,32 +1,45 @@
-# Start Here — YaarJam Phase 02
+# Start here — YaarJam Phase 03
 
-This package contains the Phase 02 source code. Follow this order.
+This package adds the first playable game: Tic Tac Toe. Read this first if you're uploading to GitHub from a phone.
 
-## A. Put the source in GitHub
+## 1. Upload to GitHub
 
-1. Download `YaarJam_Phase_02.zip` and extract it.
-2. On GitHub, create a **public** repository named `yaarjam` (or another name you choose).
-3. Upload the **extracted contents**, not the ZIP as a single file. Keep `src/`, `supabase/`, and `.github/workflows/deploy.yml` in the repository root.
-4. Commit the files to the `main` branch.
-5. Open **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
-6. Open **Actions** and choose the `Build and deploy YaarJam to GitHub Pages` workflow. It should run automatically after the commit. It runs the unit test command and production build before deploying.
+1. Download and extract `YaarJam_Phase_03.zip`.
+2. Open your new GitHub repository.
+3. Upload the *contents* of the extracted folder. Do not upload only the ZIP file. Keep hidden `.github/workflows/deploy.yml` and all `src/` / `supabase/` files.
+4. Commit the files to `main`.
+5. Under **Settings → Pages**, set **Source** to **GitHub Actions**.
+6. Open **Actions** and review the build log. It must pass tests and build before deploying.
 
-If the GitHub mobile file picker cannot upload folders, use a desktop browser or another Git-aware upload method. Uploading only the ZIP file will not deploy the application.
+Without Supabase secrets, the website uses demo mode. You can test Tic Tac Toe as pass-and-play on one device; cross-device play is not available in demo mode.
 
-## B. Try demo mode first
+## 2. Run tests/build where npm can reach the registry
 
-No Supabase credentials are needed to publish the UI preview. It will show **DEMO MODE**. Demo rooms exist only in that browser; a friend on another phone cannot join a demo room.
+Install Node.js 22+ and run:
 
-## C. Enable cross-device rooms
+```bash
+npm install
+npm test
+npm run build
+```
 
-1. Create a Supabase project and enable **Authentication → Anonymous Sign-Ins**.
-2. Run the complete `supabase/schema.sql` in Supabase SQL Editor and check that it finishes without errors.
-3. In GitHub, open **Settings → Secrets and variables → Actions** and add repository secrets named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Use your project URL and browser-safe publishable/anon key only.
-4. Run the GitHub Actions workflow again.
-5. On phone A, create a room and share its code/link. On phone B, open the same deployed site, enter a different player name and join. Confirm both phones show both players.
+The authoring environment could not reach `registry.npmjs.org`, so the full dependency-backed tests/build were not verified here. Do not skip GitHub Actions results.
 
-**Never** put a Supabase `service_role` / secret key in frontend code or any `VITE_*` variable.
+## 3. Supabase setup
 
-## Current limitation
+- New Supabase project: enable Anonymous Sign-Ins, then run the complete `supabase/schema.sql` in SQL Editor.
+- Existing Phase 02 project: run only `supabase/phase_03_tic_tac_toe.sql`.
+- Add the Project URL and publishable/anon key as repository Actions secrets named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- Never use the service-role/secret key in frontend code or `VITE_*` variables.
 
-Phase 02 implements room/lobby membership and live player-list refresh, not playable rounds. Tic Tac Toe, Truth or Dare, Chess and Ludo gameplay will be added in later phases. The authoring environment could not download npm dependencies because `registry.npmjs.org` returned `EAI_AGAIN`; therefore the full build and Vitest suite have not been verified locally. Do not call the deployment verified until GitHub Actions succeeds and the two-phone test passes.
+## 4. Test online gameplay on two phones
+
+1. Phone A opens the deployed site and creates a Tic Tac Toe online room.
+2. Copy and send the invite link to Phone B.
+3. Phone B opens the link, uses a different guest name and joins.
+4. Check that both see two room members. Play alternating X/O moves.
+5. Confirm invalid moves are rejected, winner/draw syncs, refresh restores the board, and both players must request a rematch.
+
+## Honest status
+
+12 rule-level checks and all TypeScript/TSX syntax transpilation passed in the build environment. Full Vitest/Vite build, Supabase SQL and actual two-phone tests remain pending.

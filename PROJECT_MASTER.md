@@ -1,8 +1,8 @@
 # YaarJam — Project Master Specification
 
-**Version:** 0.2 (game catalogue + brand decision)  
+**Version:** 0.3 (Phase 03 playable Tic Tac Toe addendum)  
 **Prepared:** 15 October 2026  
-**Status:** Phase 02 source created; Supabase setup, full build, and live QA are pending  
+**Status:** Phase 03 Tic Tac Toe source added; package-backed build, Supabase execution, and live QA are pending  
 **Working name:** YaarJam (provisional; domain/trademark/app-name availability not verified)
 
 ## 1. Vision
@@ -318,28 +318,25 @@ Do not block Phase 01 on optional social features; resolve only decisions needed
 - OWASP Authorization Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 - OWASP HTML5 Security Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html
 
-## Copy-paste handoff note
+## Phase 03 implementation status — 15 October 2026
 
-**Project:** YaarJam (working name; domain/trademark not verified), a free-first, mobile-first multiplayer web gaming site for friends and couples.  
-**Current phase:** Phase 00 — specification updated to Version 0.2.  
-**Completed:** researched social multiplayer and couples-game patterns; selected working name YaarJam; defined board games, friendship party games, Couples Corner, phased release order, room flow, architecture/security rules, and testing gates.  
-**Planned catalogue:** Ludo, Chess, Tic Tac Toe, Truth or Dare (Friends + Couples), Would You Rather (Friends + Couples), Never Have I Ever, Most Likely To, Who Knows Me Best, How Well Do You Know Your Partner, Couples This or That, Our Story Quiz, Date Night Spinner; later Connect Four, Snakes & Ladders, Guess the Word/Who Am I, and custom packs.  
-**Not done yet:** no repository inspected/created, no code written, no Supabase project connected, no deployment, and no multiplayer tests performed.  
-**Critical rule:** each phase ends with actual test results, a bug/status update, changelog, rollback point, and this copy-paste note. Do not overwrite working features without inspection.  
-**Next step:** Phase 01 — inspect the chosen repository (or establish a clean one if none is selected) and build the mobile-first frontend shell with Board / Friends / Couples categories, create/join room screens, and lobby.  
-**Constraints:** target ₹0 for private friend testing, with free-tier limits; YaarJam is not yet a legally/domain-cleared brand. Ludo house rules are a proposal and must be unit-tested.
+Phase 01/02 implementation exists in the source package. Phase 03 adds the first game loop, Tic Tac Toe, but does not mean the full catalogue is ready.
 
-## 12. Implementation status — Phase 02 (15 October 2026)
+- **Playable demo:** local pass-and-play on the same device, clearly labelled as demo-only.
+- **Online game source:** when Supabase is configured, a Tic Tac Toe room initializes after players join; each device sees the board, turn, winner/draw state and rematch requests through Supabase realtime.
+- **Trusted validation:** PostgreSQL functions enforce room membership, active room status/expiry, player assignment, turn ownership, move range, occupied cells, end-of-round checks, win/draw and dual-consent rematch.
+- **Leave/rejoin behavior:** if a player leaves a Tic Tac Toe room mid-match, the game is reset to waiting for the remaining player so a new guest can join; X/O roles are re-assigned in join order.
+- **SQL files:** run `supabase/schema.sql` on a fresh project. For a project that already ran Phase 02, run only `supabase/phase_03_tic_tac_toe.sql`.
+- **Automated test source:** `src/lib/tic-tac-toe.test.ts` contains ten Vitest cases. The pure rule module was compiled independently and twelve rule-level checks passed.
+- **Not verified:** npm install timed out against the registry; full Vitest/Vite build, live SQL/RLS verification and two-phone online test have not passed or been claimed.
+- **Still planned:** Chess, Ludo, Truth or Dare, couple quizzes, other game loops, chat, profiles, rate limiting and broader release hardening.
 
-- The frontend source package now includes the private room lobby integration: anonymous guest sign-in, room creation/join/leave RPCs, member-only row-level security, room host handoff, invite links, and realtime lobby refresh.
-- The SQL migration is `supabase/schema.sql`. It must be run in the user's Supabase project, and Anonymous Sign-Ins must be enabled.
-- GitHub Pages workflow is `.github/workflows/deploy.yml`; it installs dependencies, runs unit tests and builds before deployment. Set repository Actions secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to switch from demo mode to live rooms.
-- Real online rooms are not verified until the GitHub Actions build passes and two independent devices create/join the same lobby.
-- Playable game rounds are still out of scope for Phase 02. The next implementation phase should start with a small Truth or Dare round or Tic Tac Toe, after verifying the room backend.
+## Current copy-paste handoff note
 
-
-### Package QA update — 15 October 2026
-
-- Updated package dependency ranges to Supabase JS `^2.117.3` and Vite `^6.4.4`.
-- Passed source syntax transpilation for all TypeScript/TSX/config files, CSS parsing (0 errors), 9 catalogue/room-code smoke assertions, a supplemental strict-null/no-unused internal typecheck with dependency stubs, workflow YAML/JSON checks, required-file checks, and a frontend secret-value scan.
-- Retried dependency installation; npm registry DNS still fails with `EAI_AGAIN`. Do not claim the complete production build or Vitest suite passed until GitHub Actions runs successfully.
+**Project:** YaarJam — “Apne log. Apna game.” (working name; domain/trademark not cleared).  
+**Current phase:** Phase 03 — first playable game.  
+**Completed in source:** mobile-first catalogue and Supabase room foundation retained; local Tic Tac Toe pass-and-play; Supabase-backed game state, server-side move/win/draw validation, realtime refresh, two-player rematch consent, X/O swap, and reset if someone leaves mid-match.  
+**Test evidence:** all TS/TSX files passed syntax transpilation; standalone TypeScript compilation of game rules passed; 12 independent rule tests passed. Ten Vitest tests are included but Vitest was not run because npm dependency installation timed out.  
+**Not completed/verified:** full build, SQL execution, GitHub Actions run, real two-phone play.  
+**Next:** run npm install/test/build from a network-enabled environment, apply the appropriate SQL file, deploy, and verify a full online match and rematch on two phones. Fix failures before adding the next game.  
+**Keep following:** small phases, preserve working features, update `CURRENT_STATUS.md`, `BUGS.md`, `TEST_PLAN.md`, `CHANGELOG.md`, and this note every step.

@@ -255,3 +255,56 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 
 .online-live-badge.closed { color: #935c20; background: #fff4e4; }
 .online-live-badge.closed i { background: #cf8e32; }
+
+/* Phase 03 — playable Tic Tac Toe */
+.ttt-panel {
+  margin: 28px 0 34px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid #e8e5fb;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #ffffff 0%, #fbfaff 100%);
+  box-shadow: 0 12px 36px rgba(59, 44, 115, 0.06);
+}
+.ttt-panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.ttt-panel-heading h2 { margin: 4px 0 6px; font-size: clamp(23px, 3.4vw, 30px); letter-spacing: -0.04em; }
+.ttt-panel-heading h2 span { font-size: .75em; }
+.ttt-panel-heading p:not(.eyebrow) { margin: 0; max-width: 560px; color: #74728a; font-size: 13px; line-height: 1.55; }
+.ttt-mode-badge { flex: 0 0 auto; border-radius: 999px; background: #fff2e7; color: #9a4d11; padding: 8px 11px; font-size: 10px; font-weight: 800; letter-spacing: .07em; }
+.ttt-mode-badge.ttt-live { background: #e4f8ee; color: #18704a; }
+.ttt-status { display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 11px 14px; border-radius: 12px; background: #f0efff; color: #44388e; font-weight: 700; font-size: 13px; margin-bottom: 18px; }
+.ttt-status-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: #7664e8; box-shadow: 0 0 0 4px rgba(118, 100, 232, .12); }
+.ttt-game-layout { display: grid; grid-template-columns: minmax(220px, 380px) minmax(180px, 1fr); gap: clamp(18px, 4vw, 30px); align-items: center; }
+.ttt-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; width: 100%; max-width: 380px; margin-inline: auto; }
+.ttt-cell { display: grid; place-items: center; min-width: 0; aspect-ratio: 1; border: 1px solid #e6e2f7; border-radius: 17px; background: #fff; color: #282348; font-size: clamp(36px, 8vw, 58px); font-weight: 800; line-height: 1; box-shadow: 0 3px 9px rgba(60, 45, 110, .035); transition: background .15s ease, border-color .15s ease, transform .15s ease; }
+.ttt-cell:not(:disabled):hover { transform: translateY(-2px); border-color: #a59bea; background: #f7f5ff; cursor: pointer; }
+.ttt-cell:disabled { cursor: default; }
+.ttt-cell.ttt-x { color: #6454d7; }
+.ttt-cell.ttt-o { color: #e17c63; }
+.ttt-cell.ttt-winning-cell { border-color: #78c9a0; background: #e6f8ee; }
+.ttt-side-info { display: flex; flex-direction: column; gap: 10px; }
+.ttt-player-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #eeedf5; background: #fff; border-radius: 14px; min-width: 0; }
+.ttt-player-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; font-size: 22px; font-weight: 800; flex: 0 0 auto; }
+.ttt-player-mark.mark-x { color: #6454d7; background: #f0eeff; }
+.ttt-player-mark.mark-o { color: #d46a51; background: #fff0eb; }
+.ttt-player-card div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ttt-player-card strong { overflow-wrap: anywhere; font-size: 13px; }
+.ttt-player-card small { color: #9895aa; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.ttt-rematch-button { width: 100%; justify-content: center; margin-top: 5px; }
+.ttt-tip { display: flex; align-items: center; gap: 9px; padding: 12px; border-radius: 12px; background: #fff7e4; color: #866020; font-size: 12px; line-height: 1.4; }
+.ttt-rematch-note, .ttt-demo-warning, .ttt-error { margin: 14px 0 0; padding: 11px 13px; border-radius: 11px; font-size: 12px; line-height: 1.5; }
+.ttt-rematch-note { background: #f4f2ff; color: #5547a6; }
+.ttt-demo-warning { background: #fff8e9; color: #80591c; }
+.ttt-error { background: #fff0ee; color: #a23b31; }
+@media (max-width: 620px) {
+  .ttt-panel { padding: 16px; border-radius: 18px; margin-top: 22px; }
+  .ttt-panel-heading { flex-direction: column; gap: 10px; }
+  .ttt-mode-badge { order: -1; }
+  .ttt-game-layout { grid-template-columns: minmax(0, 1fr); }
+  .ttt-board { max-width: 340px; gap: 7px; }
+  .ttt-cell { border-radius: 13px; font-size: clamp(40px, 13vw, 56px); }
+  .ttt-side-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ttt-player-card { gap: 8px; padding: 9px; }
+  .ttt-player-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 19px; }
+  .ttt-player-card strong { font-size: 12px; }
+  .ttt-tip, .ttt-rematch-button { grid-column: 1 / -1; }
+}
