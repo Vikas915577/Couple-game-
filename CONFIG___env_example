@@ -1,0 +1,4 @@
+# YaarJam V1 uses this dedicated Supabase project by default in src/lib/supabase.ts.
+# These are public frontend values only; never put a service_role/secret key here.
+VITE_SUPABASE_URL=https://gvwmisqnepdlejhvacbm.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_nQjn2zxIl7J4deFztx3u-A_fyRvAEfo

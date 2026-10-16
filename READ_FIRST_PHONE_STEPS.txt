@@ -1,0 +1,36 @@
+YAARJAM — ONE FLAT ZIP FIX (Hinglish)
+======================================
+
+Root cause verified from GitHub:
+The current deploy.yml in the repo still copies only the old files. It does NOT copy these four modules:
+- tic-tac-toe-ai.ts
+- RoomChat.tsx
+- LocalPartyGamePanel.tsx
+- LudoPanel.tsx
+That is why the exact same TS2307 errors keep appearing.
+
+This archive contains NO folders. Every file is at the ZIP root.
+
+PHONE STEPS — DO IN THIS ORDER:
+
+1) Download this ZIP and upload the ZIP itself to repository root:
+   https://github.com/Vikas915577/Couple-game-/upload/main
+   The exact filename must be:
+   YaarJam_V1_1_ALL_FILES_NO_FOLDERS.zip
+   Commit it to main.
+
+2) Open the file named DEPLOY_WORKFLOW_CODE.txt from this ZIP and copy ALL its contents.
+
+3) Open the existing workflow:
+   https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
+   Delete all old text, paste the new workflow, and Commit changes on main.
+
+4) Open:
+   https://github.com/Vikas915577/Couple-game-/actions
+   Check the NEWEST run named "Build and deploy YaarJam from flat ZIP".
+
+Why two actions are required:
+GitHub Actions cannot read a ZIP that has not been uploaded, and GitHub does not automatically treat a text file inside a ZIP as a workflow. So upload the one ZIP, then replace the workflow once. No other app source files need individual uploads.
+
+The ZIP itself has no folders; the workflow creates src/lib and src/components only inside the temporary GitHub Actions build runner.
+The tests/build are not claimed successful until that new run passes.
