@@ -1,4 +1,4 @@
-name: Test and deploy YaarJam V1.1
+name: Build and deploy YaarJam
 
 on:
   push:
@@ -22,37 +22,37 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify uploaded release ZIP
+      - name: Restore the expected src folder structure
         run: |
-          test -f YaarJam_V1_1_Bundle.zip
-          unzip -t YaarJam_V1_1_Bundle.zip
-      - name: Extract release source
-        run: |
-          rm -rf _v11_package _site
-          mkdir -p _v11_package
-          unzip -q YaarJam_V1_1_Bundle.zip -d _v11_package
-          test -f _v11_package/YaarJam_V1_1/package.json
-          test -f _v11_package/YaarJam_V1_1/src/main.tsx
-          test -f _v11_package/YaarJam_V1_1/supabase/v1_1_social_and_adult_packs.sql
+          set -eu
+          mkdir -p src/lib
+          cp App.tsx src/App.tsx
+          cp main.tsx src/main.tsx
+          cp styles.css src/styles.css
+          cp catalog.ts src/catalog.ts
+          cp catalog.test.ts src/catalog.test.ts
+          cp vite-env.d.ts src/vite-env.d.ts
+          cp supabase.ts src/lib/supabase.ts
+          cp rooms.ts src/lib/rooms.ts
+          cp tic-tac-toe.ts src/lib/tic-tac-toe.ts
+          cp tic-tac-toe-online.ts src/lib/tic-tac-toe-online.ts
+          cp tic-tac-toe.test.ts src/lib/tic-tac-toe.test.ts
+          cp truth-or-dare.ts src/lib/truth-or-dare.ts
+          cp truth-or-dare-online.ts src/lib/truth-or-dare-online.ts
+          cp truth-or-dare.test.ts src/lib/truth-or-dare.test.ts
+          cp truth-or-dare-online.test.ts src/lib/truth-or-dare-online.test.ts
       - name: Install dependencies
-        working-directory: _v11_package/YaarJam_V1_1
         run: npm install --no-audit --no-fund
       - name: Run unit tests
-        working-directory: _v11_package/YaarJam_V1_1
         run: npm test
       - name: Build production website
-        working-directory: _v11_package/YaarJam_V1_1
         run: npm run build
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Prepare Pages artifact
-        run: |
-          mkdir -p _site
-          cp -a _v11_package/YaarJam_V1_1/dist/. _site/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: ./dist
 
   deploy:
     needs: build
