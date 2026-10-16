@@ -1,0 +1,24 @@
+# Changelog — YaarJam V1.2
+
+## Added
+- Dedicated Adults 18+ section with an age-confirmation gate.
+- Darker premium after-hours visual theme, separate from the all-ages/friends shelf.
+- Adult Truth or Dare (Friends) and Couples After Dark cards connect to existing playable Truth or Dare room modes.
+- Five Coming Soon adult-game previews: Spin the Bottle 18+, After-Dark Would You Rather, Couples Challenge Roulette, Adult Quiz Battle, and Mystery Dare Wheel. These cards are non-interactive until their game logic is ready.
+- Adult-zone unit tests validate unique IDs, allowed statuses, and that only existing playable catalogue games are launchable.
+
+## Preserved
+- Tic Tac Toe online and local computer opponents (Easy / Medium / Hard).
+- Room chat component, Ludo panel/logic, party games, Supabase integration, and Truth or Dare prompt packs.
+- Existing room codes, current room flows, and responsive layout.
+
+## Guardrails
+- Adults zone requires an explicit 18+ confirmation. Adult prompt packs also require a separate in-game confirmation.
+- Consent-first copy makes skip/pass available and never encourages pressure, private-photo sharing, or sharing sensitive personal details.
+- Coming Soon cards are explicitly disabled so they cannot create empty rooms.
+
+## Verification status
+- TypeScript/TSX syntax diagnostics: passed for changed TypeScript files.
+- New adult-hub test source added.
+- ZIP structure/integrity validation: to be reported with the release package.
+- Full `npm test` and production build for this exact V1.2 source have not been run locally because package installation timed out. GitHub Actions must pass before production is confirmed.

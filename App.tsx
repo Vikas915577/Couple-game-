@@ -9,8 +9,10 @@ import {
   ClipboardCheck,
   Copy,
   Gamepad2,
+  Flame,
   Heart,
   House,
+  LockKeyhole,
   Menu,
   Plus,
   RefreshCw,
@@ -54,8 +56,9 @@ import { chooseComputerMove, type AiDifficulty } from './lib/tic-tac-toe-ai';
 import { RoomChat } from './components/RoomChat';
 import { LocalPartyGamePanel } from './components/LocalPartyGamePanel';
 import { LudoPanel } from './components/LudoPanel';
+import { adultHubGames, type AdultHubGame } from './adult-games';
 
-type Navigation = 'Home' | 'Games' | 'Rooms' | 'Profile';
+type Navigation = 'Home' | 'Games' | 'Rooms' | 'Adults' | 'Profile';
 type Modal = 'create' | 'join' | 'created' | 'game' | null;
 
 interface DemoRoom {
@@ -74,6 +77,7 @@ const navigation: { label: Navigation; icon: typeof House }[] = [
   { label: 'Home', icon: House },
   { label: 'Games', icon: Gamepad2 },
   { label: 'Rooms', icon: Users },
+  { label: 'Adults', icon: Flame },
   { label: 'Profile', icon: Heart },
 ];
 
@@ -109,6 +113,7 @@ function App() {
   const [tttDifficulty, setTttDifficulty] = useState<AiDifficulty>('medium');
   const [darePack, setDarePack] = useState<PromptPack>('classic');
   const [adultConfirmed, setAdultConfirmed] = useState(false);
+  const [adultSectionUnlocked, setAdultSectionUnlocked] = useState(false);
   const [darePrompt, setDarePrompt] = useState<Prompt | null>(null);
   const [dareUsedIds, setDareUsedIds] = useState<string[]>([]);
   const [dareTurn, setDareTurn] = useState(0);
@@ -671,7 +676,7 @@ function App() {
           {navigation.map(({ label, icon: Icon }) => (
             <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => goTo(label)}>
               <Icon size={19} strokeWidth={2} />
-              <span>{label}</span>
+              <span>{label === 'Adults' ? 'Adults 18+' : label}</span>
               {label === 'Rooms' && rooms.length > 0 && <span className="nav-count">{rooms.length}</span>}
               {activeNav === label && <span className="nav-active-dot" />}
             </button>
@@ -736,7 +741,7 @@ function App() {
               </section>
 
               <section className="quick-stats" aria-label="Project highlights">
-                <div className="quick-stat"><span className="stat-icon stat-purple"><Gamepad2 size={17} /></span><div><strong>{games.length} games planned</strong><span>Across 3 game zones</span></div></div>
+                <div className="quick-stat"><span className="stat-icon stat-purple"><Gamepad2 size={17} /></span><div><strong>{games.length} games listed</strong><span>Across 4 game zones</span></div></div>
                 <div className="quick-stat"><span className="stat-icon stat-peach"><Heart size={17} /></span><div><strong>Couples corner</strong><span>Made for two</span></div></div>
                 <div className="quick-stat"><span className="stat-icon stat-green"><ShieldCheck size={17} /></span><div><strong>Private rooms</strong><span>Invite friends to play</span></div></div>
               </section>
@@ -747,6 +752,7 @@ function App() {
                   <button className="zone-card zone-board" onClick={() => { setActiveCategory('board'); setActiveNav('Games'); }}><span className="zone-icon">🎲</span><div><span className="zone-kicker">THINK & WIN</span><h3>Board games</h3><p>Ludo, chess and quick classics.</p></div><span className="zone-arrow"><ArrowRight size={17} /></span></button>
                   <button className="zone-card zone-friends" onClick={() => { setActiveCategory('friends'); setActiveNav('Games'); }}><span className="zone-icon">🎉</span><div><span className="zone-kicker">LET LOOSE</span><h3>Friends & party</h3><p>Truth, dares, votes and laughs.</p></div><span className="zone-arrow"><ArrowRight size={17} /></span></button>
                   <button className="zone-card zone-couples" onClick={() => { setActiveCategory('couples'); setActiveNav('Games'); }}><span className="zone-icon">💗</span><div><span className="zone-kicker">JUST YOU TWO</span><h3>Couples corner</h3><p>Sweet questions and date-night fun.</p></div><span className="zone-arrow"><ArrowRight size={17} /></span></button>
+                  <button className="zone-card zone-adults" onClick={() => { setAdultSectionUnlocked(false); setActiveNav('Adults'); setMobileMenuOpen(false); }}><span className="zone-icon">🌙</span><div><span className="zone-kicker">18+ · ADULTS ONLY</span><h3>After Dark</h3><p>Bold adult games and couples challenges.</p></div><span className="zone-arrow"><ArrowRight size={17} /></span></button>
                 </div>
               </section>
 
@@ -773,6 +779,53 @@ function App() {
               <div className="filter-tabs" role="group" aria-label="Filter games by category">{categoryOrder.map((category) => <button key={category} className={activeCategory === category ? 'filter-tab active' : 'filter-tab'} onClick={() => setActiveCategory(category)}>{categoryLabels[category]}<span>{filterGames(games, category, '').length}</span></button>)}</div>
               <div className="catalog-results-heading"><strong>{activeCategory === 'all' ? 'All games' : categoryLabels[activeCategory]}</strong><span>{visibleGames.length} games listed · {mvpCount} playable in V1</span></div>
               {visibleGames.length > 0 ? <div className="game-grid catalog-game-grid">{visibleGames.map((game) => <GameCard key={game.id} game={game} onSelect={selectGame} />)}</div> : <div className="empty-state"><span>🔎</span><h3>No games found</h3><p>Try another search or switch category.</p><button className="button button-secondary" onClick={() => { setSearch(''); setActiveCategory('all'); }}>Clear filters</button></div>}
+            </section>
+          )}
+
+          {activeNav === 'Adults' && (
+            <section className="adults-page">
+              <section className="adult-hero">
+                <div className="adult-hero-glow" />
+                <p className="adult-eyebrow"><Flame size={15} /> PRIVATE ZONE · ADULTS 18+</p>
+                <h1>After hours.<br /><span>Your rules.</span></h1>
+                <p className="adult-hero-copy">A separate shelf for grown-up party games, bolder conversations and couples challenges. Choose your vibe, keep your boundaries, and pass any prompt without explaining.</p>
+                <div className="adult-hero-pills"><span>18+ only</span><span>Consent first</span><span>Skip anytime</span></div>
+              </section>
+
+              {!adultSectionUnlocked ? (
+                <section className="adult-age-gate" aria-labelledby="adult-gate-title">
+                  <div className="adult-lock-mark"><ShieldCheck size={26} /></div>
+                  <div className="adult-gate-copy"><p className="eyebrow">AGE CONFIRMATION</p><h2 id="adult-gate-title">Adults only (18+)</h2><p>By entering, you confirm you are 18 or older. Adult packs are optional; every player can skip a prompt or choose a lighter pack.</p></div>
+                  <button className="button adult-enter-button" onClick={() => setAdultSectionUnlocked(true)}>I’m 18+ — enter <ArrowRight size={16} /></button>
+                </section>
+              ) : (
+                <>
+                  <section className="adult-games-section">
+                    <div className="adult-section-heading"><div><p className="eyebrow">READY TO PLAY</p><h2>Adult games</h2><p>Choose a game that everyone in the room is comfortable with.</p></div><span className="adult-section-count">{adultHubGames.filter((game) => game.status === 'playable').length} playable</span></div>
+                    <div className="adult-game-grid">
+                      {adultHubGames.filter((game) => game.status === 'playable').map((game: AdultHubGame) => (
+                        <article className="adult-game-card adult-game-playable" key={game.id}>
+                          <div className="adult-game-art"><span>{game.emoji}</span><b>18+</b></div>
+                          <div className="adult-game-body"><div className="adult-game-tag">PLAY NOW</div><h3>{game.title}</h3><p>{game.description}</p><div className="adult-game-meta"><span>{game.players}</span><span>{game.duration}</span></div><button className="button adult-card-button" onClick={() => { const target = games.find((item) => item.id === game.linkedGameId); if (!target) { setNotice('This game is not available yet.'); return; } setCreateGameId(target.id); setDarePack('classic'); setAdultConfirmed(false); setDareError(''); setModal('create'); setNotice('After the room opens, choose Spicy 18+ or After Dark and confirm the adult-pack checkbox to start those prompts.'); }}>Play game <ArrowRight size={16} /></button></div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="adult-games-section adult-coming-section">
+                    <div className="adult-section-heading"><div><p className="eyebrow">IN THE WORKS</p><h2>Coming soon</h2><p>Highlighted ideas for the next adult-game releases. These cards are previews, not playable yet.</p></div><span className="adult-coming-label"><Sparkles size={13} /> COMING SOON</span></div>
+                    <div className="adult-game-grid adult-coming-grid">
+                      {adultHubGames.filter((game) => game.status === 'coming-soon').map((game: AdultHubGame) => (
+                        <article className="adult-game-card adult-game-coming" key={game.id}>
+                          <div className="adult-game-art"><span>{game.emoji}</span><b>18+</b></div>
+                          <div className="adult-game-body"><div className="adult-game-tag coming">COMING SOON</div><h3>{game.title}</h3><p>{game.description}</p><button className="adult-coming-button" disabled aria-label={`${game.title}, coming soon`}>Not playable yet <LockKeyhole size={14} /></button></div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                  <div className="adult-house-rules"><ShieldCheck size={18} /><p><strong>Keep it fun, never pressured.</strong> Every adult prompt is optional. Ask first before touch-based dares, respect a “no” immediately, and never share private photos or personal details as a challenge.</p></div>
+                </>
+              )}
             </section>
           )}
 
@@ -876,11 +929,11 @@ function App() {
             </section>
           )}
 
-          <footer className="site-footer"><span>© 2026 YaarJam</span><span><i /> V1.0.0 · {isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms + Tic Tac Toe + Truth or Dare + Ludo' : 'Demo / setup required'}</span><button onClick={() => setNotice(isSupabaseConfigured ? 'Rooms and Tic Tac Toe use Supabase. Test a Tic Tac Toe room from two separate devices.' : 'To use cross-device rooms, run supabase/schema.sql (or the appropriate existing-database migration) and configure VITE_SUPABASE_URL plus VITE_SUPABASE_ANON_KEY.')}>About this build <ChevronDown size={13} /></button></footer>
+          <footer className="site-footer"><span>© 2026 YaarJam</span><span><i /> V1.2.0 · {isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms + Tic Tac Toe + Truth or Dare + Ludo' : 'Demo / setup required'}</span><button onClick={() => setNotice(isSupabaseConfigured ? 'Rooms and Tic Tac Toe use Supabase. Test a Tic Tac Toe room from two separate devices.' : 'To use cross-device rooms, run supabase/schema.sql (or the appropriate existing-database migration) and configure VITE_SUPABASE_URL plus VITE_SUPABASE_ANON_KEY.')}>About this build <ChevronDown size={13} /></button></footer>
         </div>
       </main>
 
-      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">{navigation.map(({ label, icon: Icon }) => <button key={label} className={activeNav === label ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => goTo(label)}><Icon size={19} /><span>{label}</span></button>)}</nav>
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">{navigation.map(({ label, icon: Icon }) => <button key={label} aria-label={label === 'Adults' ? 'Adults 18+ section' : label} className={activeNav === label ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => goTo(label)}><Icon size={19} /><span>{label === 'Adults' ? '18+' : label}</span></button>)}</nav>
 
       {notice && <div className="toast" role="status"><ClipboardCheck size={17} /><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Dismiss message"><X size={15} /></button></div>}
 

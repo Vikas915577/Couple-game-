@@ -1,36 +1,51 @@
-YAARJAM — ONE FLAT ZIP FIX (Hinglish)
-======================================
+YAARJAM V1.2 — ADULT HUB / COMPLETE SINGLE-ZIP RELEASE
+=====================================================
 
-Root cause verified from GitHub:
-The current deploy.yml in the repo still copies only the old files. It does NOT copy these four modules:
-- tic-tac-toe-ai.ts
-- RoomChat.tsx
-- LocalPartyGamePanel.tsx
-- LudoPanel.tsx
-That is why the exact same TS2307 errors keep appearing.
+WHAT IS INCLUDED
+----------------
+- Current YaarJam code: room flow, Supabase client, Tic Tac Toe AI, Ludo, party games, Truth or Dare and RoomChat.
+- New Adults 18+ navigation section with a self-confirmation gate.
+- Two playable adult entries backed by existing Truth or Dare modes: Adult Truth or Dare and Couples After Dark.
+- Five clearly labelled, disabled Coming Soon previews; they cannot open empty rooms.
+- Adult prompt packs remain optional with an additional in-game confirmation. Skip/pass is always available.
+- New adult-hub unit tests.
+- Corrected GitHub Actions workflow text.
 
-This archive contains NO folders. Every file is at the ZIP root.
+THE ZIP HAS NO FOLDERS INSIDE IT
+--------------------------------
+Every file is at the top level of this ZIP. GitHub Actions creates src/lib and src/components temporarily during build. No source files need to be individually uploaded.
 
-PHONE STEPS — DO IN THIS ORDER:
+PHONE DEPLOY STEPS — DO IN ORDER
+--------------------------------
+STEP 1 — UPLOAD THIS ZIP
+1. Download this ZIP to your phone.
+2. Open https://github.com/Vikas915577/Couple-game-/upload/main
+3. Upload this ZIP itself to the repository root and commit to main.
+4. Keep the exact filename: YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip
 
-1) Download this ZIP and upload the ZIP itself to repository root:
-   https://github.com/Vikas915577/Couple-game-/upload/main
-   The exact filename must be:
-   YaarJam_V1_1_ALL_FILES_NO_FOLDERS.zip
-   Commit it to main.
+STEP 2 — REPLACE THE WORKFLOW
+1. Open DEPLOY_WORKFLOW_CODE.txt inside this ZIP and copy ALL of it.
+2. Open https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
+3. Select all old text in the editor, delete it, paste the copied workflow.
+4. Commit changes on main.
 
-2) Open the file named DEPLOY_WORKFLOW_CODE.txt from this ZIP and copy ALL its contents.
+STEP 3 — CHECK THE NEW RUN
+Open https://github.com/Vikas915577/Couple-game-/actions and open the newest run named "Test and deploy YaarJam V1.2 Adult Hub". ZIP verification, required-module verification, unit tests, production build and deploy must all pass.
 
-3) Open the existing workflow:
-   https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
-   Delete all old text, paste the new workflow, and Commit changes on main.
+Uploading the ZIP first may trigger the OLD workflow; ignore that run. Replace deploy.yml next, then check the new named run.
 
-4) Open:
-   https://github.com/Vikas915577/Couple-game-/actions
-   Check the NEWEST run named "Build and deploy YaarJam from flat ZIP".
+SUPABASE MIGRATION
+------------------
+SQL_v1_1_social_and_adult_packs.sql is included at the ZIP root. If that migration has not already been applied to your selected YaarJam Supabase project, run it once in Supabase SQL Editor AFTER the existing YaarJam V1 schema. It adds room chat, online Ludo state/RPCs and adult prompt packs. Do not use the Winter Arc project for YaarJam. Never put a service-role/secret key in browser code.
 
-Why two actions are required:
-GitHub Actions cannot read a ZIP that has not been uploaded, and GitHub does not automatically treat a text file inside a ZIP as a workflow. So upload the one ZIP, then replace the workflow once. No other app source files need individual uploads.
+HONEST VERIFICATION STATUS
+--------------------------
+- Changed TypeScript/TSX files passed syntax parsing.
+- Adult-hub data check passed: 2 playable entries, 5 Coming Soon entries; all playable cards link to an existing playable game ID.
+- ZIP integrity and the no-folder layout are checked by the packaging script.
+- Local npm install timed out here. I am NOT claiming this exact V1.2 revision has passed npm test/build locally. GitHub Actions must pass before the website is confirmed.
+- After deployment, test room chat, Ludo, and shared Truth or Dare on two separate phones; green CI is not a substitute for that check.
 
-The ZIP itself has no folders; the workflow creates src/lib and src/components only inside the temporary GitHub Actions build runner.
-The tests/build are not claimed successful until that new run passes.
+ADULT CONTENT NOTE
+------------------
+This is a self-confirmation gate, not legal identity verification. Adult packs require a separate in-game confirmation. Only adults should use adult prompts; ask before any touch-based dare, respect a no immediately, and never make private photos/personal data a challenge.
