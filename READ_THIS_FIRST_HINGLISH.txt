@@ -1,0 +1,37 @@
+YAARJAM — FINAL BUILD FIX (READ FIRST)
+======================================
+
+I checked your latest screenshot.
+- Run unit tests: PASS (the earlier run showed 27/27 tests passing)
+- Build production website: FAIL
+- Exact cause: App.tsx imports 4 feature modules that the current workflow never copies into src:
+  1. src/lib/tic-tac-toe-ai.ts
+  2. src/components/RoomChat.tsx
+  3. src/components/LocalPartyGamePanel.tsx
+  4. src/components/LudoPanel.tsx
+
+This fix adds those files PLUS the Ludo, party-prompt, AI and related test/helper files.
+Do NOT upload this fix ZIP to the repository. Do NOT edit other files.
+
+DO THIS ONE CHANGE ONLY:
+1. Download and open this ZIP on the phone.
+2. Open DEPLOY_WORKFLOW_CODE.txt inside it.
+3. Copy the ENTIRE text of that file.
+4. Open this exact GitHub file:
+   https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
+5. In the large editor: select all old contents, delete them, paste the copied new workflow.
+6. Scroll down and tap Commit changes. Keep branch main.
+7. Open:
+   https://github.com/Vikas915577/Couple-game-/actions
+8. Open the NEWEST run. Check:
+   - Restore ALL source modules into src
+   - Verify imported feature modules
+   - Run unit tests
+   - Build production website
+   - Deploy website
+
+WHAT TO EXPECT
+- The 4 module-not-found errors shown in your screenshot should be addressed by copying the modules into the exact paths TypeScript expects.
+- This workflow fix does NOT claim the full build has passed before GitHub runs it.
+- If a later TypeScript error appears, send the new screenshot.
+- After deployment, test the site in the browser; online chat/Ludo may additionally require the Supabase migration from the V1.1 bundle.

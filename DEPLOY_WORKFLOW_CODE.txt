@@ -18,11 +18,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Restore the expected src folder structure
+
+      - name: Restore ALL source modules into src
         run: |
           set -eu
           mkdir -p src/lib src/components
@@ -52,14 +54,31 @@ jobs:
           cp RoomChat.tsx src/components/RoomChat.tsx
           cp LocalPartyGamePanel.tsx src/components/LocalPartyGamePanel.tsx
           cp LudoPanel.tsx src/components/LudoPanel.tsx
+
+      - name: Verify imported feature modules
+        run: |
+          set -eu
+          test -f src/lib/tic-tac-toe-ai.ts
+          test -f src/components/RoomChat.tsx
+          test -f src/components/LocalPartyGamePanel.tsx
+          test -f src/components/LudoPanel.tsx
+          test -f src/lib/ludo.ts
+          test -f src/lib/ludo-online.ts
+          test -f src/lib/party-prompts.ts
+          echo "All App.tsx feature modules were copied."
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
       - name: Run unit tests
         run: npm test
+
       - name: Build production website
         run: npm run build
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
