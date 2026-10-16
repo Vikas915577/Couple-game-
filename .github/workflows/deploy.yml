@@ -16,16 +16,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Restore the expected src folder structure
+      - name: Restore ALL source modules
         run: |
           set -eu
-          mkdir -p src/lib
+          mkdir -p src/lib src/components
           cp App.tsx src/App.tsx
           cp main.tsx src/main.tsx
           cp styles.css src/styles.css
@@ -37,23 +35,39 @@ jobs:
           cp tic-tac-toe.ts src/lib/tic-tac-toe.ts
           cp tic-tac-toe-online.ts src/lib/tic-tac-toe-online.ts
           cp tic-tac-toe.test.ts src/lib/tic-tac-toe.test.ts
+          cp tic-tac-toe-ai.ts src/lib/tic-tac-toe-ai.ts
+          cp tic-tac-toe-ai.test.ts src/lib/tic-tac-toe-ai.test.ts
+          cp ludo.ts src/lib/ludo.ts
+          cp ludo.test.ts src/lib/ludo.test.ts
+          cp ludo-online.ts src/lib/ludo-online.ts
+          cp ludo-online.test.ts src/lib/ludo-online.test.ts
+          cp party-prompts.ts src/lib/party-prompts.ts
+          cp party-prompts.test.ts src/lib/party-prompts.test.ts
           cp truth-or-dare.ts src/lib/truth-or-dare.ts
           cp truth-or-dare-online.ts src/lib/truth-or-dare-online.ts
           cp truth-or-dare.test.ts src/lib/truth-or-dare.test.ts
           cp truth-or-dare-online.test.ts src/lib/truth-or-dare-online.test.ts
+          cp RoomChat.tsx src/components/RoomChat.tsx
+          cp LocalPartyGamePanel.tsx src/components/LocalPartyGamePanel.tsx
+          cp LudoPanel.tsx src/components/LudoPanel.tsx
+      - name: Verify required files
+        run: |
+          set -eu
+          test -f src/lib/tic-tac-toe-ai.ts
+          test -f src/components/RoomChat.tsx
+          test -f src/components/LocalPartyGamePanel.tsx
+          test -f src/components/LudoPanel.tsx
+          echo "All four missing files exist."
+      - uses: actions/configure-pages@v5
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Run unit tests
+      - name: Run tests
         run: npm test
-      - name: Build production website
+      - name: Build website
         run: npm run build
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -64,6 +78,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy website
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
