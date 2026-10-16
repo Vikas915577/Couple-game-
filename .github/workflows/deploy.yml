@@ -18,39 +18,41 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Node.js
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify uploaded ZIP
+      - name: Restore the expected src folder structure
         run: |
-          test -f YaarJam_Phone_Deploy_Bundle.zip
-          unzip -t YaarJam_Phone_Deploy_Bundle.zip
-      - name: Extract app source
-        run: |
-          unzip -q YaarJam_Phone_Deploy_Bundle.zip -d /tmp/yaarjam-bundle
-          test -f /tmp/yaarjam-bundle/YaarJam_V1/package.json
-          test -f /tmp/yaarjam-bundle/YaarJam_V1/src/main.tsx
+          set -eu
+          mkdir -p src/lib
+          cp App.tsx src/App.tsx
+          cp main.tsx src/main.tsx
+          cp styles.css src/styles.css
+          cp catalog.ts src/catalog.ts
+          cp catalog.test.ts src/catalog.test.ts
+          cp vite-env.d.ts src/vite-env.d.ts
+          cp supabase.ts src/lib/supabase.ts
+          cp rooms.ts src/lib/rooms.ts
+          cp tic-tac-toe.ts src/lib/tic-tac-toe.ts
+          cp tic-tac-toe-online.ts src/lib/tic-tac-toe-online.ts
+          cp tic-tac-toe.test.ts src/lib/tic-tac-toe.test.ts
+          cp truth-or-dare.ts src/lib/truth-or-dare.ts
+          cp truth-or-dare-online.ts src/lib/truth-or-dare-online.ts
+          cp truth-or-dare.test.ts src/lib/truth-or-dare.test.ts
+          cp truth-or-dare-online.test.ts src/lib/truth-or-dare-online.test.ts
       - name: Install dependencies
-        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
         run: npm install --no-audit --no-fund
-      - name: Run tests
-        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
+      - name: Run unit tests
         run: npm test
-      - name: Build website
-        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
+      - name: Build production website
         run: npm run build
-      - name: Configure Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Prepare website artifact
-        run: |
-          mkdir -p _site
-          cp -a /tmp/yaarjam-bundle/YaarJam_V1/dist/. _site/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
-
+          path: ./dist
   deploy:
     needs: build
     runs-on: ubuntu-latest
