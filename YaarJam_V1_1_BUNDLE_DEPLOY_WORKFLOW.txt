@@ -1,0 +1,69 @@
+name: Test and deploy YaarJam V1.1
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify uploaded release ZIP
+        run: |
+          test -f YaarJam_V1_1_Bundle.zip
+          unzip -t YaarJam_V1_1_Bundle.zip
+      - name: Extract release source
+        run: |
+          rm -rf _v11_package _site
+          mkdir -p _v11_package
+          unzip -q YaarJam_V1_1_Bundle.zip -d _v11_package
+          test -f _v11_package/YaarJam_V1_1/package.json
+          test -f _v11_package/YaarJam_V1_1/src/main.tsx
+          test -f _v11_package/YaarJam_V1_1/supabase/v1_1_social_and_adult_packs.sql
+      - name: Install dependencies
+        working-directory: _v11_package/YaarJam_V1_1
+        run: npm install --no-audit --no-fund
+      - name: Run unit tests
+        working-directory: _v11_package/YaarJam_V1_1
+        run: npm test
+      - name: Build production website
+        working-directory: _v11_package/YaarJam_V1_1
+        run: npm run build
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          cp -a _v11_package/YaarJam_V1_1/dist/. _site/
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4

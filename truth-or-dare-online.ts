@@ -1,5 +1,5 @@
 import { requireSupabase } from './supabase';
-import type { DareMode, PromptKind } from './truth-or-dare';
+import type { DareMode, PromptKind, PromptPack } from './truth-or-dare';
 
 export interface OnlineTruthOrDareState {
   room_id: string;
@@ -82,8 +82,13 @@ export function loadTruthOrDare(roomId: string): Promise<OnlineTruthOrDareState>
   })();
 }
 
-export function chooseOnlineTruthOrDare(roomId: string, kind: PromptKind): Promise<OnlineTruthOrDareState> {
-  return callStateRpc('choose_truth_or_dare', { p_room_id: roomId, p_kind: kind });
+export function chooseOnlineTruthOrDare(roomId: string, kind: PromptKind, pack: PromptPack = 'classic'): Promise<OnlineTruthOrDareState> {
+  // Keep the original two-argument RPC call for the Classic pack so V1 stays usable
+  // until the V1.1 Supabase migration is applied. Non-classic packs require that migration.
+  const args = pack === 'classic'
+    ? { p_room_id: roomId, p_kind: kind }
+    : { p_room_id: roomId, p_kind: kind, p_pack: pack };
+  return callStateRpc('choose_truth_or_dare', args);
 }
 
 export function resolveOnlineTruthOrDare(roomId: string, skipped: boolean): Promise<OnlineTruthOrDareState> {

@@ -27,4 +27,10 @@ describe('Truth or Dare prompt deck', () => {
     const used = getPromptDeck('friends', 'truth').map((prompt) => prompt.id);
     expect(drawPrompt('friends', 'truth', used, 0)?.kind).toBe('truth');
   });
+
+  it('keeps adult-oriented couples packs separate from the classic deck', () => {
+    expect(getPromptDeck('couples', 'truth', 'after-dark').every((prompt) => prompt.pack === 'after-dark')).toBe(true);
+    expect(getPromptDeck('couples', 'dare', 'spicy').length).toBeGreaterThan(0);
+    expect(getPromptDeck('friends', 'truth', 'after-dark')).toHaveLength(0);
+  });
 });

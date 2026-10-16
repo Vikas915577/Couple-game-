@@ -60,7 +60,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '🤔',
     theme: 'lavender',
-    status: 'planned',
+    status: 'mvp',
     tags: ['party', 'votes', 'questions'],
   },
   {
@@ -72,7 +72,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '🫶',
     theme: 'mint',
-    status: 'planned',
+    status: 'mvp',
     tags: ['couple', 'quiz', 'date night'],
   },
   {
@@ -96,7 +96,7 @@ export const games: GameDefinition[] = [
     duration: '10–30 min',
     emoji: '🎲',
     theme: 'lime',
-    status: 'planned',
+    status: 'mvp',
     tags: ['board', 'dice', 'classic'],
   },
   {
@@ -108,7 +108,7 @@ export const games: GameDefinition[] = [
     duration: '5–10 min',
     emoji: '💞',
     theme: 'rose',
-    status: 'planned',
+    status: 'mvp',
     tags: ['couple', 'choices', 'date night'],
   },
   {
@@ -120,7 +120,7 @@ export const games: GameDefinition[] = [
     duration: '10–20 min',
     emoji: '🙋',
     theme: 'lavender',
-    status: 'planned',
+    status: 'mvp',
     tags: ['party', 'stories', 'questions'],
   },
   {
@@ -132,7 +132,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '👉',
     theme: 'blue',
-    status: 'planned',
+    status: 'mvp',
     tags: ['party', 'votes', 'group'],
   },
   {
@@ -144,7 +144,7 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '📖',
     theme: 'peach',
-    status: 'planned',
+    status: 'mvp',
     tags: ['couple', 'memories', 'quiz'],
   },
   {
@@ -156,17 +156,22 @@ export const games: GameDefinition[] = [
     duration: '5–15 min',
     emoji: '💬',
     theme: 'mint',
-    status: 'planned',
+    status: 'mvp',
     tags: ['party', 'team', 'word'],
   },
+  { id: 'rock-paper-scissors', name: 'Rock Paper Scissors', category: 'friends', shortDescription: 'A quick duel against a friend or computer.', players: '1–2 players', duration: '1–3 min', emoji: '✊', theme: 'blue', status: 'mvp', tags: ['quick', 'computer', 'duel'] },
 ];
 
 
 // One source of truth for game routes that have actual gameplay in V1.
 // Catalogue cards can list future ideas, but must never create an empty/non-working room for them.
-export const playableGameIds = ['truth-dare-friends', 'couple-truth-dare', 'tic-tac-toe'] as const;
+export const playableGameIds = ['truth-dare-friends', 'couple-truth-dare', 'tic-tac-toe', 'would-you-rather', 'partner-quiz', 'ludo', 'this-or-that', 'never-have-i-ever', 'most-likely-to', 'our-story', 'guess-word', 'rock-paper-scissors'] as const;
+export const onlineGameIds = ['truth-dare-friends', 'couple-truth-dare', 'tic-tac-toe', 'ludo'] as const;
 export function isPlayableGame(id: string): boolean {
   return (playableGameIds as readonly string[]).includes(id);
+}
+export function isOnlineGame(id: string): boolean {
+  return (onlineGameIds as readonly string[]).includes(id);
 }
 
 export const categoryLabels: Record<GameCategory, string> = {

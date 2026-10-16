@@ -29,6 +29,7 @@ import {
   games,
   isValidRoomCode,
   isPlayableGame,
+  isOnlineGame,
   makeDemoRoomCode,
   type GameCategory,
   type GameDefinition,
@@ -47,8 +48,12 @@ import {
 } from './lib/rooms';
 import { applyMove, emptyBoard, findWinningLine, getResultStatus, markForUser, type Board, type Mark, type TicTacToeState } from './lib/tic-tac-toe';
 import { loadTicTacToe, removeTicTacToeSubscription, requestTicTacToeRematch, startOrLoadTicTacToe, submitTicTacToeMove, subscribeToTicTacToe } from './lib/tic-tac-toe-online';
-import { drawPrompt, type DareMode, type Prompt, type PromptKind } from './lib/truth-or-dare';
+import { drawPrompt, promptPackLabels, type DareMode, type Prompt, type PromptKind, type PromptPack } from './lib/truth-or-dare';
 import { chooseOnlineTruthOrDare, loadTruthOrDare, removeTruthOrDareSubscription, resolveOnlineTruthOrDare, startOrLoadTruthOrDare, subscribeToTruthOrDare, type OnlineTruthOrDareState } from './lib/truth-or-dare-online';
+import { chooseComputerMove, type AiDifficulty } from './lib/tic-tac-toe-ai';
+import { RoomChat } from './components/RoomChat';
+import { LocalPartyGamePanel } from './components/LocalPartyGamePanel';
+import { LudoPanel } from './components/LudoPanel';
 
 type Navigation = 'Home' | 'Games' | 'Rooms' | 'Profile';
 type Modal = 'create' | 'join' | 'created' | 'game' | null;
@@ -100,6 +105,10 @@ function App() {
   const [tttDemoStatus, setTttDemoStatus] = useState<'playing' | 'x_won' | 'o_won' | 'draw'>('playing');
   const [tttWorking, setTttWorking] = useState(false);
   const [tttError, setTttError] = useState('');
+  const [tttOpponent, setTttOpponent] = useState<'friend' | 'computer'>('computer');
+  const [tttDifficulty, setTttDifficulty] = useState<AiDifficulty>('medium');
+  const [darePack, setDarePack] = useState<PromptPack>('classic');
+  const [adultConfirmed, setAdultConfirmed] = useState(false);
   const [darePrompt, setDarePrompt] = useState<Prompt | null>(null);
   const [dareUsedIds, setDareUsedIds] = useState<string[]>([]);
   const [dareTurn, setDareTurn] = useState(0);
@@ -120,6 +129,7 @@ function App() {
     void (async () => {
       try {
         const userId = await ensureGuestSession();
+        setMyUserId(userId);
         const savedRooms = await listMyOnlineRooms(userId);
         if (cancelled) return;
         setBackendStatus('online');
@@ -231,6 +241,20 @@ function App() {
     }
   }, [currentRoom?.code, currentRoom?.mode, currentRoom?.gameId]);
 
+  useEffect(() => {
+    if (currentRoom?.mode !== 'demo' || currentRoom.gameId !== 'tic-tac-toe' || tttOpponent !== 'computer' || tttDemoTurn !== 'O' || tttDemoStatus !== 'playing') return;
+    const timer = window.setTimeout(() => {
+      const index = chooseComputerMove(tttDemoBoard, 'O', tttDifficulty);
+      if (index === null) return;
+      const next = [...tttDemoBoard] as Board;
+      next[index] = 'O';
+      setTttDemoBoard(next);
+      setTttDemoStatus(getResultStatus(next) as 'playing' | 'x_won' | 'o_won' | 'draw');
+      setTttDemoTurn('X');
+    }, 420);
+    return () => window.clearTimeout(timer);
+  }, [currentRoom?.code, currentRoom?.mode, currentRoom?.gameId, tttOpponent, tttDifficulty, tttDemoBoard, tttDemoTurn, tttDemoStatus]);
+
   const isDareGame = currentRoom?.gameId === 'truth-dare-friends' || currentRoom?.gameId === 'couple-truth-dare';
   const dareMode: DareMode = currentRoom?.gameId === 'couple-truth-dare' ? 'couples' : 'friends';
   const darePlayers = dareMode === 'couples' ? ['Partner 1', 'Partner 2'] : ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
@@ -288,6 +312,8 @@ function App() {
     setDareTurn(0);
     setDareCompleted(0);
     setDareSkipped(0);
+    setDarePack('classic');
+    setAdultConfirmed(false);
     setDareError('');
   }, [currentRoom?.code, currentRoom?.gameId, isDareGame]);
 
@@ -312,6 +338,10 @@ function App() {
 
   async function pickDarePrompt(kind: PromptKind) {
     setDareError('');
+    if ((darePack === 'spicy' || darePack === 'after-dark') && !adultConfirmed) {
+      setDareError('Please confirm you are 18+ before choosing an adult pack.');
+      return;
+    }
     if (hasOnlineDare) {
       if (!onlineRoomState || !dareOnlineState) {
         setDareError('The shared game is still connecting. Wait a moment and try again.');
@@ -327,7 +357,7 @@ function App() {
       }
       setDareWorking(true);
       try {
-        const state = await chooseOnlineTruthOrDare(onlineRoomState.room.id, kind);
+        const state = await chooseOnlineTruthOrDare(onlineRoomState.room.id, kind, darePack);
         setDareOnlineState(state);
       } catch (error) {
         setDareError(error instanceof Error ? error.message : 'Could not select a shared prompt.');
@@ -337,7 +367,8 @@ function App() {
       return;
     }
 
-    const next = drawPrompt(dareMode, kind, dareUsedIds);
+    const next = drawPrompt(dareMode, kind, dareUsedIds, Math.random(), darePack);
+    if (!next) { setDareError('No prompts in this pack for this mode yet. Choose another pack.'); return; }
     if (!next) return;
     setDarePrompt(next);
     setDareUsedIds((ids) => ids.includes(next.id) ? [next.id] : [...ids, next.id]);
@@ -377,7 +408,7 @@ function App() {
   const myTttMark = shownTttState ? markForUser(shownTttState, myUserId) : null;
   const tttCanMove = hasOnlineTtt
     ? Boolean(shownTttState && shownTttState.status === 'playing' && myTttMark && shownTttState.current_turn_user_id === myUserId && !tttWorking)
-    : Boolean(currentRoom?.mode === 'demo' && currentRoom.gameId === 'tic-tac-toe' && tttDemoStatus === 'playing' && !tttWorking);
+    : Boolean(currentRoom?.mode === 'demo' && currentRoom.gameId === 'tic-tac-toe' && tttDemoStatus === 'playing' && !tttWorking && (tttOpponent === 'friend' || tttDemoTurn === 'X'));
 
   async function handleTttMove(index: number) {
     setTttError('');
@@ -425,7 +456,7 @@ function App() {
       return;
     }
     setTttDemoBoard(emptyBoard());
-    setTttDemoTurn(tttDemoTurn === 'X' ? 'O' : 'X');
+    setTttDemoTurn(tttOpponent === 'computer' ? 'X' : (tttDemoTurn === 'X' ? 'O' : 'X'));
     setTttDemoStatus('playing');
   }
 
@@ -467,7 +498,7 @@ function App() {
     setWorking(true);
     setNotice('');
     try {
-      if (!isSupabaseConfigured) {
+      if (!isSupabaseConfigured || !isOnlineGame(game.id)) {
         const room: DemoRoom = {
           mode: 'demo',
           code: makeDemoRoomCode(),
@@ -483,7 +514,8 @@ function App() {
         setOnlineRoomState(null);
         setModal('created');
         setActiveNav('Rooms');
-        setBackendStatus('demo');
+        if (!isSupabaseConfigured) setBackendStatus('demo');
+        if (isSupabaseConfigured && !isOnlineGame(game.id)) setNotice(`${game.name} is playable on this device in V1.1; online state sync for this game is still in development.`);
         return;
       }
 
@@ -748,7 +780,7 @@ function App() {
             <section className="rooms-page">
               <p className="eyebrow"><Users size={14} /> YOUR GAME ROOMS</p>
               <div className="catalog-title-row"><div><h1>Rooms for your <span>people.</span></h1><p className="welcome-copy">{isSupabaseConfigured ? 'Invite friends with a code and watch the lobby update live.' : 'Preview the room flow now; connect Supabase to let friends join from their own phones.'}</p></div><button className="button button-primary" onClick={() => openCreate()}><Plus size={17} /> Create room</button></div>
-              <div className={`prototype-notice ${isSupabaseConfigured && backendStatus === 'online' ? 'online-notice' : ''}`}><ShieldCheck size={19} /><div><strong>{isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms connected' : backendStatus === 'error' ? 'Backend setup needs attention' : 'Demo preview mode'}</strong><p>{isSupabaseConfigured && backendStatus === 'online' ? 'Room membership is stored in Supabase. Tic Tac Toe is playable online; Truth or Dare is playable locally. Other game rounds will be added in later phases.' : backendStatus === 'error' ? 'Check the displayed error, environment variables, Supabase anonymous sign-in setting and SQL schema. Do not use a service-role key in the frontend.' : 'Rooms stay in this browser only until you configure Supabase. The ZIP includes the SQL schema and GitHub Pages workflow.'}</p></div></div>
+              <div className={`prototype-notice ${isSupabaseConfigured && backendStatus === 'online' ? 'online-notice' : ''}`}><ShieldCheck size={19} /><div><strong>{isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms connected' : backendStatus === 'error' ? 'Backend setup needs attention' : 'Demo preview mode'}</strong><p>{isSupabaseConfigured && backendStatus === 'online' ? 'Room membership is stored in Supabase. Tic Tac Toe, Truth or Dare, and Ludo can sync online after the V1.1 migration is applied. Other party rounds are local/pass-the-phone in this release.' : backendStatus === 'error' ? 'Check the displayed error, environment variables, Supabase anonymous sign-in setting and SQL schema. Do not use a service-role key in the frontend.' : 'Rooms stay in this browser only until you configure Supabase. The ZIP includes the SQL schema and GitHub Pages workflow.'}</p></div></div>
               <div className="room-actions-row"><button className="room-action-card" onClick={() => openCreate()}><span className="action-card-icon purple-icon"><Plus size={22} /></span><div><strong>Create a room</strong><p>{isSupabaseConfigured ? 'Create a shared online lobby.' : 'Create a local demo room.'}</p></div><ChevronRight size={18} /></button><button className="room-action-card" onClick={() => { setModal('join'); setNotice(''); }}><span className="action-card-icon peach-icon"><Users size={22} /></span><div><strong>Join with a code</strong><p>Join a friend’s online lobby by code.</p></div><ChevronRight size={18} /></button></div>
 
               {onlineRoomState && (
@@ -757,6 +789,7 @@ function App() {
                   <div className="online-code-row"><span>ROOM CODE</span><strong>{onlineRoomState.room.code}</strong><button className="button button-secondary" onClick={() => void copyText(`${window.location.origin}${window.location.pathname}?room=${onlineRoomState.room.code}`, 'Invite link copied. Send it to your friend.') }><Copy size={15} /> Copy invite link</button></div>
                   <div className="online-members-heading"><strong>Players</strong><span>{onlineRoomState.players.length}/{onlineRoomState.room.max_players}</span></div>
                   <div className="online-members">{onlineRoomState.players.map((player) => <div className="online-member" key={player.id}><span className="online-member-avatar">{player.display_name.slice(0, 1).toUpperCase()}</span><span>{player.display_name}{player.user_id === onlineRoomState.room.host_user_id && <small>HOST</small>}</span>{player.user_id === onlineRoomState.room.host_user_id && <ShieldCheck size={16} />}</div>)}</div>
+                  <RoomChat roomId={onlineRoomState.room.id} myUserId={myUserId} />
                   <div className="online-room-foot"><span>Lobby sync is live. Tic Tac Toe and Truth or Dare share validated game state when the V1 Supabase schema is installed.</span><button className="button button-secondary" disabled={working} onClick={() => void handleLeaveRoom()}>Leave room</button></div>
                 </section>
               )}
@@ -765,8 +798,9 @@ function App() {
                 <section className="ttt-panel" aria-label="Tic Tac Toe game">
                   <div className="ttt-panel-heading">
                     <div><p className="eyebrow">NOW PLAYING</p><h2>Tic Tac Toe <span>❎</span></h2><p>{hasOnlineTtt ? 'Moves are validated by the room backend and synced live.' : 'Local demo: take turns on this device. Open a configured online room to play across phones.'}</p></div>
-                    <span className={`ttt-mode-badge ${hasOnlineTtt ? 'ttt-live' : ''}`}>{hasOnlineTtt ? 'ONLINE GAME' : 'LOCAL DEMO'}</span>
+                    <span className={`ttt-mode-badge ${hasOnlineTtt ? 'ttt-live' : ''}`}>{hasOnlineTtt ? 'ONLINE GAME' : 'LOCAL / AI'}</span>
                   </div>
+                  {!hasOnlineTtt && <div className="ttt-ai-controls"><div className="ttt-ai-switch" role="group" aria-label="Tic Tac Toe opponent"><button className={tttOpponent === 'computer' ? 'active' : ''} onClick={() => { setTttOpponent('computer'); setTttDemoBoard(emptyBoard()); setTttDemoTurn('X'); setTttDemoStatus('playing'); }}>Vs Computer</button><button className={tttOpponent === 'friend' ? 'active' : ''} onClick={() => { setTttOpponent('friend'); setTttDemoBoard(emptyBoard()); setTttDemoTurn('X'); setTttDemoStatus('playing'); }}>Same Phone</button></div>{tttOpponent === 'computer' && <label className="ttt-ai-level">Difficulty <select value={tttDifficulty} onChange={(event) => { setTttDifficulty(event.target.value as AiDifficulty); setTttDemoBoard(emptyBoard()); setTttDemoTurn('X'); setTttDemoStatus('playing'); }}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard (unbeatable)</option></select></label>}</div>}
                   <div className="ttt-status" role="status"><span className="ttt-status-dot" />{tttStatusMessage}</div>
                   <div className="ttt-game-layout">
                     <div className="ttt-board" role="group" aria-label="Tic Tac Toe board">
@@ -782,7 +816,7 @@ function App() {
                     </div>
                     <div className="ttt-side-info">
                       <div className="ttt-player-card"><span className="ttt-player-mark mark-x">X</span><div><strong>{hasOnlineTtt ? tttXPlayerName : 'Player X'}</strong><small>{hasOnlineTtt && shownTttState?.x_user_id === myUserId ? 'YOU' : 'FIRST MOVE'}</small></div></div>
-                      <div className="ttt-player-card"><span className="ttt-player-mark mark-o">O</span><div><strong>{hasOnlineTtt ? tttOPlayerName : 'Player O'}</strong><small>{hasOnlineTtt && shownTttState?.o_user_id === myUserId ? 'YOU' : 'SECOND MOVE'}</small></div></div>
+                      <div className="ttt-player-card"><span className="ttt-player-mark mark-o">O</span><div><strong>{hasOnlineTtt ? tttOPlayerName : tttOpponent === 'computer' ? 'Computer' : 'Player O'}</strong><small>{hasOnlineTtt && shownTttState?.o_user_id === myUserId ? 'YOU' : !hasOnlineTtt && tttOpponent === 'computer' ? 'AI OPPONENT' : 'SECOND MOVE'}</small></div></div>
                       {shownTttStatus === 'x_won' || shownTttStatus === 'o_won' || shownTttStatus === 'draw' ? (
                         <button className="button button-primary ttt-rematch-button" disabled={tttWorking || (hasOnlineTtt && Boolean(shownTttState && (myTttMark === 'X' ? shownTttState.x_rematch_ready : shownTttState.o_rematch_ready)))} onClick={() => void handleTttRematch()}><RefreshCw size={16} /> {hasOnlineTtt && shownTttState && (myTttMark === 'X' ? shownTttState.x_rematch_ready : shownTttState.o_rematch_ready) ? 'Rematch requested' : 'Play again'}</button>
                       ) : (
@@ -802,6 +836,14 @@ function App() {
                     <div><p className="eyebrow">NOW PLAYING · {dareMode === 'couples' ? 'COUPLES CORNER' : 'FRIENDS & PARTY'}</p><h2>{dareMode === 'couples' ? 'Couple Truth or Dare 💗' : 'Truth or Dare 🎭'}</h2><p>Take turns, pick a prompt and keep the fun comfortable for everyone.</p></div>
                     <span className={`dare-mode-badge ${hasOnlineDare ? 'ttt-live' : ''}`}>{hasOnlineDare ? 'SHARED ONLINE ROUND' : 'LOCAL DEMO ROUND'}</span>
                   </div>
+                  <div className="dare-pack-controls">
+                    <label className="field-label" htmlFor="dare-pack">Prompt vibe</label>
+                    <select id="dare-pack" className="form-input" value={darePack} onChange={(event) => { const pack = event.target.value as PromptPack; if ((pack === 'spicy' || pack === 'after-dark') && !adultConfirmed) { setDareError('Confirm you are 18+ to unlock adult packs.'); return; } if (['romantic', 'flirty', 'after-dark'].includes(pack) && dareMode !== 'couples') { setDareError('Romantic and After Dark packs are for Couples mode.'); return; } setDarePack(pack); setDareError(''); }}>
+                      {(Object.keys(promptPackLabels) as PromptPack[]).filter((pack) => dareMode === 'couples' || !['romantic', 'flirty', 'after-dark'].includes(pack)).map((pack) => <option key={pack} value={pack} disabled={((pack === 'spicy' || pack === 'after-dark') && !adultConfirmed)}>{promptPackLabels[pack]}</option>)}
+                    </select>
+                    <label className="adult-confirm-row"><input type="checkbox" checked={adultConfirmed} onChange={(event) => { setAdultConfirmed(event.target.checked); if (!event.target.checked && ['spicy', 'after-dark'].includes(darePack)) setDarePack('classic'); }} /><span>I’m 18+ and comfortable with adult/flirty prompts.</span></label>
+                    <p className="pack-guidance">After Dark is couples-only. Everyone can skip any prompt; never pressure another player.</p>
+                  </div>
                   <div className="dare-stats"><div><strong>{displayedDareCompleted}</strong><span>Completed</span></div><div><strong>{displayedDareSkipped}</strong><span>Skipped</span></div><div><strong>{displayedDareTurn + 1}</strong><span>Current seat</span></div></div>
                   <div className="dare-current-player"><span className="dare-avatar">{displayedDareCurrentPlayer.slice(0, 1).toUpperCase()}</span><div><small>{hasOnlineDare && displayedDareCurrentPlayer !== 'Connecting…' && isMyDareTurn ? 'YOUR TURN' : 'CURRENT TURN'}</small><strong>{displayedDareCurrentPlayer}</strong></div></div>
                   {dareError && <p className="ttt-error" role="alert">{dareError}</p>}
@@ -814,9 +856,12 @@ function App() {
                   ) : (
                     <div className="dare-prompt-card"><span className={`dare-prompt-kind ${displayedDarePrompt.kind}`}>{displayedDarePrompt.kind === 'truth' ? '💬 TRUTH' : '⚡ DARE'}</span><p>{displayedDarePrompt.text}</p><div className="dare-prompt-actions"><button className="button button-secondary" disabled={!canResolveDare} onClick={() => void finishDareTurn(true)}>Skip prompt</button><button className="button button-primary" disabled={!canResolveDare} onClick={() => void finishDareTurn(false)}><Check size={16} /> Done · Next turn</button></div>{hasOnlineDare && !isMyDareTurn && <p className="muted-copy">Only the current player can resolve this prompt.</p>}</div>
                   )}
-                  <p className="dare-safety-note"><ShieldCheck size={15} /> Anyone can skip without explaining. No pressure, no punishments. {hasOnlineDare ? 'The current prompt, turns and counters are stored in Supabase and sync to room members.' : 'Demo rounds run only on this device; configure Supabase for cross-device rooms.'}</p>
+                  <p className="dare-safety-note"><ShieldCheck size={15} /> Anyone can skip without explaining. No pressure, no punishments. Adult packs are flirty/suggestive, not explicit. {hasOnlineDare ? 'The current prompt, turns and counters are stored in Supabase and sync to room members. Run the V1.1 migration to enable prompt packs.' : 'Demo rounds run only on this device; configure Supabase for cross-device rooms.'}</p>
                 </section>
               )}
+
+              {currentRoom?.gameId === 'ludo' && <LudoPanel playerName={playerName} roomId={currentRoom.mode === 'online' ? onlineRoomState?.room.id : undefined} myUserId={myUserId} roomPlayers={onlineRoomState?.players ?? []} hostUserId={onlineRoomState?.room.host_user_id ?? null} />}
+              {currentRoom?.mode === 'demo' && ['would-you-rather', 'this-or-that', 'never-have-i-ever', 'most-likely-to', 'guess-word', 'partner-quiz', 'our-story', 'rock-paper-scissors'].includes(currentRoom.gameId) && <LocalPartyGamePanel gameId={currentRoom.gameId} playerName={playerName} />}
 
               <div className="section-heading room-list-heading"><div><p className="eyebrow">ROOM HISTORY</p><h2>Recent rooms</h2></div><span className="room-local-label">THIS BROWSER</span></div>
               {rooms.length ? <div className="room-list">{rooms.map((room) => <div className="room-list-item" key={`${room.mode}-${room.id ?? room.code}`}><div className="room-list-icon">{games.find((game) => game.id === room.gameId)?.emoji ?? '🎮'}</div><div className="room-list-main"><strong>{room.roomName} · {room.gameName}</strong><span>{room.mode === 'online' ? 'ONLINE' : 'DEMO'} · Code: <b>{room.code}</b> · {room.createdAt}</span></div><button className="icon-button room-copy-button" aria-label={`Copy room code ${room.code}`} onClick={() => void copyText(room.code, 'Room code copied.') }><Copy size={17} /></button></div>)}</div> : <div className="empty-state room-empty"><span>🛋️</span><h3>No rooms yet</h3><p>Make a room or join a friend’s room to see it here.</p><button className="button button-primary" onClick={() => openCreate()}>Make your first room <ArrowRight size={16} /></button></div>}
@@ -831,7 +876,7 @@ function App() {
             </section>
           )}
 
-          <footer className="site-footer"><span>© 2026 YaarJam</span><span><i /> V1.0.0 · {isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms + Tic Tac Toe + Truth or Dare' : 'Demo / setup required'}</span><button onClick={() => setNotice(isSupabaseConfigured ? 'Rooms and Tic Tac Toe use Supabase. Test a Tic Tac Toe room from two separate devices.' : 'To use cross-device rooms, run supabase/schema.sql (or the appropriate existing-database migration) and configure VITE_SUPABASE_URL plus VITE_SUPABASE_ANON_KEY.')}>About this build <ChevronDown size={13} /></button></footer>
+          <footer className="site-footer"><span>© 2026 YaarJam</span><span><i /> V1.0.0 · {isSupabaseConfigured && backendStatus === 'online' ? 'Realtime rooms + Tic Tac Toe + Truth or Dare + Ludo' : 'Demo / setup required'}</span><button onClick={() => setNotice(isSupabaseConfigured ? 'Rooms and Tic Tac Toe use Supabase. Test a Tic Tac Toe room from two separate devices.' : 'To use cross-device rooms, run supabase/schema.sql (or the appropriate existing-database migration) and configure VITE_SUPABASE_URL plus VITE_SUPABASE_ANON_KEY.')}>About this build <ChevronDown size={13} /></button></footer>
         </div>
       </main>
 
@@ -847,13 +892,13 @@ function App() {
             <label className="field-label" htmlFor="player-name">Your name (shown to friends)</label><input id="player-name" className="form-input" maxLength={18} value={playerName} onChange={(event) => rememberPlayerName(event.target.value)} placeholder="e.g. Vashu" />
             <label className="field-label" htmlFor="room-name">Room name</label><input id="room-name" className="form-input" maxLength={36} value={roomName} onChange={(event) => setRoomName(event.target.value)} placeholder="e.g. Friday night gang" />
             <label className="field-label" htmlFor="create-game">Choose a game</label><select id="create-game" className="form-input" value={createGameId} onChange={(event) => setCreateGameId(event.target.value)}>{games.map((game) => <option key={game.id} value={game.id} disabled={!isPlayableGame(game.id)}>{game.emoji} {game.name}{!isPlayableGame(game.id) ? ' · planned' : ''}</option>)}</select>
-            <div className="modal-demo-note"><ShieldCheck size={17} /><span>{isSupabaseConfigured ? (createGameId === 'tic-tac-toe' ? 'Room and game state will be saved to Supabase. Tic Tac Toe starts after a second player joins.' : 'Room and membership will be saved to Supabase, but this game is not playable in this phase.') : 'Demo mode: this room is local to this browser. Tic Tac Toe can be played on this device only; configure Supabase for cross-device play.'}</span></div>
-            <button className="button button-primary modal-main-button" disabled={working} onClick={() => void handleCreateRoom()}>{working ? 'Creating room…' : isSupabaseConfigured ? 'Create online room' : 'Create demo room'} <ArrowRight size={17} /></button>
+            <div className="modal-demo-note"><ShieldCheck size={17} /><span>{isOnlineGame(createGameId) && isSupabaseConfigured ? (createGameId === 'tic-tac-toe' ? 'Room and game state will be saved to Supabase. Choose online play or the computer from inside a local Tic Tac Toe room.' : 'Room membership is online. Apply the V1.1 Supabase SQL migration to enable room chat, online Ludo, and shared prompt packs.') : 'This game is local/pass-the-phone or versus computer in V1.1. Online syncing is only enabled for Tic Tac Toe and Truth or Dare until the next game-state migration.'}</span></div>
+            <button className="button button-primary modal-main-button" disabled={working} onClick={() => void handleCreateRoom()}>{working ? 'Creating room…' : isSupabaseConfigured && isOnlineGame(createGameId) ? 'Create online room' : 'Start local game'} <ArrowRight size={17} /></button>
           </>}
           {modal === 'created' && currentRoom && <>
             <div className="modal-success-icon"><Check size={24} /></div><p className="eyebrow">{currentRoom.mode === 'online' ? 'ONLINE ROOM CREATED' : 'DEMO ROOM CREATED'}</p><h2 id="modal-title">{currentRoom.mode === 'online' ? 'Your online lobby is ready.' : 'Your demo room is ready.'}</h2><p className="modal-subtitle">{currentRoom.roomName} · {currentRoom.gameName}</p>
             <div className="room-code-display"><span>{currentRoom.mode === 'online' ? 'SHARE THIS ROOM CODE' : 'DEMO ROOM CODE'}</span><strong>{currentRoom.code}</strong><button className="button button-secondary" onClick={() => void copyText(currentRoom.code, 'Room code copied.')}><Copy size={16} /> Copy code</button></div>
-            <div className={`modal-demo-note ${currentRoom.mode === 'online' ? '' : 'warning-note'}`}><CircleHelp size={18} /><span>{currentRoom.mode === 'online' ? 'Send the invite link or code to friends. The player list updates live; Tic Tac Toe is playable when both guests have joined.' : 'Friends on another device cannot join demo rooms. Configure Supabase to enable actual online rooms.'}</span></div>
+            <div className={`modal-demo-note ${currentRoom.mode === 'online' ? '' : 'warning-note'}`}><CircleHelp size={18} /><span>{currentRoom.mode === 'online' ? 'Send the invite link or code to friends. The player list and room chat update live; online Truth or Dare and Tic Tac Toe require the V1 schema.' : 'This game is local/pass-the-phone or versus computer on this device. Create a room for Tic Tac Toe or Truth or Dare for supported cross-device play.'}</span></div>
             <button className="button button-primary modal-main-button" onClick={() => { setModal(null); setActiveNav('Rooms'); setNotice(currentRoom.mode === 'online' ? 'Online room ready. Share the invite code with your friend.' : 'Demo room saved in this browser session only.'); }}>Go to my rooms <ArrowRight size={17} /></button>
             <button className="link-button modal-secondary-button" onClick={() => void copyText(inviteLink, currentRoom.mode === 'online' ? 'Invite link copied. Send it to your friend.' : 'Preview link copied, but it will only open the demo page.')}>Copy {currentRoom.mode === 'online' ? 'invite link' : 'preview link'}</button>
           </>}
@@ -868,8 +913,10 @@ function App() {
           {modal === 'game' && <>
             <div className={`game-detail-art art-${selectedGame.theme}`}><span>{selectedGame.emoji}</span><div className="art-spark">✦</div></div><p className="eyebrow">{categoryLabels[selectedGame.category].toUpperCase()}</p><h2 id="modal-title">{selectedGame.name}</h2><p className="modal-subtitle">{selectedGame.shortDescription}</p>
             <div className="game-detail-meta"><div><Users size={17} /><span>{selectedGame.players}</span></div><div><Zap size={17} /><span>{selectedGame.duration}</span></div></div>
-            <div className="game-status-note"><span className={`status-dot ${selectedGame.status}`} />{isPlayableGame(selectedGame.id) ? 'Playable locally; online play uses the configured Supabase backend' : 'Planned for a later release'}{!isPlayableGame(selectedGame.id) && <span className="status-demo">Not playable yet</span>}</div>
+            <div className="game-status-note"><span className={`status-dot ${selectedGame.status}`} />{isOnlineGame(selectedGame.id) ? 'Online room supported; Tic Tac Toe has local AI too' : isPlayableGame(selectedGame.id) ? 'Playable in local / pass-the-phone mode; cross-device game sync is planned' : 'Planned for a later release'}{!isPlayableGame(selectedGame.id) && <span className="status-demo">Not playable yet</span>}</div>
             <button className="button button-primary modal-main-button" disabled={!isPlayableGame(selectedGame.id)} onClick={() => openCreate(selectedGame)}>{isPlayableGame(selectedGame.id) ? 'Create a room for this game' : 'Coming in a future update'} <ArrowRight size={17} /></button>
+            {selectedGame.id === 'tic-tac-toe' && <button className="button button-secondary modal-main-button" onClick={() => { const room: DemoRoom = { mode: 'demo', code: makeDemoRoomCode(), gameId: 'tic-tac-toe', gameName: 'Tic Tac Toe vs Computer', roomName: 'Computer challenge', createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), maxPlayers: 2, status: 'open' }; setCurrentRoom(room); setOnlineRoomState(null); setTttOpponent('computer'); setTttDemoBoard(emptyBoard()); setTttDemoTurn('X'); setTttDemoStatus('playing'); setModal(null); setActiveNav('Rooms'); setNotice('Computer match ready. Choose Easy, Medium or Hard on the game panel.'); }}>Play vs Computer <Zap size={16} /></button>}
+            {selectedGame.id === 'ludo' && <button className="button button-secondary modal-main-button" onClick={() => { const room: DemoRoom = { mode: 'demo', code: makeDemoRoomCode(), gameId: 'ludo', gameName: 'Ludo vs Computer', roomName: 'Computer challenge', createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), maxPlayers: 2, status: 'open' }; setCurrentRoom(room); setOnlineRoomState(null); setModal(null); setActiveNav('Rooms'); setNotice('Ludo computer match ready. Choose Vs Computer or Same Phone in the game panel.'); }}>Play vs Computer / Same Phone <Zap size={16} /></button>}
           </>}
         </section>
       </div>}

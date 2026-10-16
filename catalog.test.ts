@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { filterGames, games, isPlayableGame, isValidRoomCode, makeDemoRoomCode } from './catalog';
+import { filterGames, games, isOnlineGame, isPlayableGame, isValidRoomCode, makeDemoRoomCode } from './catalog';
 
 describe('game catalogue', () => {
-  it('marks only working game modes as playable in V1', () => {
+  it('distinguishes playable game modes from future online modes', () => {
     const ids = games.filter((game) => game.status === 'mvp').map((game) => game.id);
-    expect(ids.sort()).toEqual(['couple-truth-dare', 'tic-tac-toe', 'truth-dare-friends'].sort());
+    expect(ids).toContain('couple-truth-dare');
+    expect(ids).toContain('tic-tac-toe');
+    expect(ids).toContain('ludo');
     expect(isPlayableGame('truth-dare-friends')).toBe(true);
     expect(isPlayableGame('couple-truth-dare')).toBe(true);
     expect(isPlayableGame('tic-tac-toe')).toBe(true);
-    expect(isPlayableGame('would-you-rather')).toBe(false);
-    expect(isPlayableGame('partner-quiz')).toBe(false);
-    expect(isPlayableGame('ludo')).toBe(false);
+    expect(isPlayableGame('would-you-rather')).toBe(true);
+    expect(isPlayableGame('partner-quiz')).toBe(true);
+    expect(isPlayableGame('ludo')).toBe(true);
+    expect(isOnlineGame('ludo')).toBe(true);
+    expect(isOnlineGame('would-you-rather')).toBe(false);
     expect(games.filter((game) => game.status === 'mvp').every((game) => isPlayableGame(game.id))).toBe(true);
   });
 
