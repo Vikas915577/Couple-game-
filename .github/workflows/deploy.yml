@@ -1,4 +1,4 @@
-name: Build and deploy YaarJam
+name: Test and deploy YaarJam V1.2 Adult Hub
 
 on:
   push:
@@ -16,58 +16,92 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Restore ALL source modules
+      - name: Verify the single flat V1.2 bundle
         run: |
           set -eu
-          mkdir -p src/lib src/components
-          cp App.tsx src/App.tsx
-          cp main.tsx src/main.tsx
-          cp styles.css src/styles.css
-          cp catalog.ts src/catalog.ts
-          cp catalog.test.ts src/catalog.test.ts
-          cp vite-env.d.ts src/vite-env.d.ts
-          cp supabase.ts src/lib/supabase.ts
-          cp rooms.ts src/lib/rooms.ts
-          cp tic-tac-toe.ts src/lib/tic-tac-toe.ts
-          cp tic-tac-toe-online.ts src/lib/tic-tac-toe-online.ts
-          cp tic-tac-toe.test.ts src/lib/tic-tac-toe.test.ts
-          cp tic-tac-toe-ai.ts src/lib/tic-tac-toe-ai.ts
-          cp tic-tac-toe-ai.test.ts src/lib/tic-tac-toe-ai.test.ts
-          cp ludo.ts src/lib/ludo.ts
-          cp ludo.test.ts src/lib/ludo.test.ts
-          cp ludo-online.ts src/lib/ludo-online.ts
-          cp ludo-online.test.ts src/lib/ludo-online.test.ts
-          cp party-prompts.ts src/lib/party-prompts.ts
-          cp party-prompts.test.ts src/lib/party-prompts.test.ts
-          cp truth-or-dare.ts src/lib/truth-or-dare.ts
-          cp truth-or-dare-online.ts src/lib/truth-or-dare-online.ts
-          cp truth-or-dare.test.ts src/lib/truth-or-dare.test.ts
-          cp truth-or-dare-online.test.ts src/lib/truth-or-dare-online.test.ts
-          cp RoomChat.tsx src/components/RoomChat.tsx
-          cp LocalPartyGamePanel.tsx src/components/LocalPartyGamePanel.tsx
-          cp LudoPanel.tsx src/components/LudoPanel.tsx
-      - name: Verify required files
+          test -f YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip
+          unzip -t YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip
+      - name: Extract flat source files
         run: |
           set -eu
-          test -f src/lib/tic-tac-toe-ai.ts
-          test -f src/components/RoomChat.tsx
-          test -f src/components/LocalPartyGamePanel.tsx
-          test -f src/components/LudoPanel.tsx
-          echo "All four missing files exist."
-      - uses: actions/configure-pages@v5
+          rm -rf _yj_flat _yj_app
+          mkdir -p _yj_flat _yj_app/src/lib _yj_app/src/components
+          unzip -q YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip -d _yj_flat
+      - name: Verify release source files
+        run: |
+          set -eu
+          for f in package.json index.html tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts App.tsx main.tsx styles.css catalog.ts catalog.test.ts adult-games.ts adult-games.test.ts vite-env.d.ts tic-tac-toe-ai.ts RoomChat.tsx LocalPartyGamePanel.tsx LudoPanel.tsx; do
+            test -f "_yj_flat/$f"
+          done
+          echo "All required V1.2 files exist in the flat archive."
+      - name: Assemble the correct Vite source tree
+        run: |
+          set -eu
+          cp _yj_flat/package.json _yj_app/package.json
+          cp _yj_flat/index.html _yj_app/index.html
+          cp _yj_flat/tsconfig.json _yj_app/tsconfig.json
+          cp _yj_flat/tsconfig.app.json _yj_app/tsconfig.app.json
+          cp _yj_flat/tsconfig.node.json _yj_app/tsconfig.node.json
+          cp _yj_flat/vite.config.ts _yj_app/vite.config.ts
+          cp _yj_flat/App.tsx _yj_app/src/App.tsx
+          cp _yj_flat/main.tsx _yj_app/src/main.tsx
+          cp _yj_flat/styles.css _yj_app/src/styles.css
+          cp _yj_flat/catalog.ts _yj_app/src/catalog.ts
+          cp _yj_flat/catalog.test.ts _yj_app/src/catalog.test.ts
+          cp _yj_flat/adult-games.ts _yj_app/src/adult-games.ts
+          cp _yj_flat/adult-games.test.ts _yj_app/src/adult-games.test.ts
+          cp _yj_flat/vite-env.d.ts _yj_app/src/vite-env.d.ts
+          cp _yj_flat/supabase.ts _yj_app/src/lib/supabase.ts
+          cp _yj_flat/rooms.ts _yj_app/src/lib/rooms.ts
+          cp _yj_flat/tic-tac-toe.ts _yj_app/src/lib/tic-tac-toe.ts
+          cp _yj_flat/tic-tac-toe-online.ts _yj_app/src/lib/tic-tac-toe-online.ts
+          cp _yj_flat/tic-tac-toe.test.ts _yj_app/src/lib/tic-tac-toe.test.ts
+          cp _yj_flat/tic-tac-toe-ai.ts _yj_app/src/lib/tic-tac-toe-ai.ts
+          cp _yj_flat/tic-tac-toe-ai.test.ts _yj_app/src/lib/tic-tac-toe-ai.test.ts
+          cp _yj_flat/ludo.ts _yj_app/src/lib/ludo.ts
+          cp _yj_flat/ludo.test.ts _yj_app/src/lib/ludo.test.ts
+          cp _yj_flat/ludo-online.ts _yj_app/src/lib/ludo-online.ts
+          cp _yj_flat/ludo-online.test.ts _yj_app/src/lib/ludo-online.test.ts
+          cp _yj_flat/party-prompts.ts _yj_app/src/lib/party-prompts.ts
+          cp _yj_flat/party-prompts.test.ts _yj_app/src/lib/party-prompts.test.ts
+          cp _yj_flat/truth-or-dare.ts _yj_app/src/lib/truth-or-dare.ts
+          cp _yj_flat/truth-or-dare-online.ts _yj_app/src/lib/truth-or-dare-online.ts
+          cp _yj_flat/truth-or-dare.test.ts _yj_app/src/lib/truth-or-dare.test.ts
+          cp _yj_flat/truth-or-dare-online.test.ts _yj_app/src/lib/truth-or-dare-online.test.ts
+          cp _yj_flat/RoomChat.tsx _yj_app/src/components/RoomChat.tsx
+          cp _yj_flat/LocalPartyGamePanel.tsx _yj_app/src/components/LocalPartyGamePanel.tsx
+          cp _yj_flat/LudoPanel.tsx _yj_app/src/components/LudoPanel.tsx
+      - name: Verify all required feature modules
+        run: |
+          set -eu
+          test -f _yj_app/src/lib/tic-tac-toe-ai.ts
+          test -f _yj_app/src/components/RoomChat.tsx
+          test -f _yj_app/src/components/LocalPartyGamePanel.tsx
+          test -f _yj_app/src/components/LudoPanel.tsx
+          test -f _yj_app/src/adult-games.ts
+          test -f _yj_app/src/adult-games.test.ts
+          echo "PASS: all required imports and adult-hub tests exist."
       - name: Install dependencies
+        working-directory: _yj_app
         run: npm install --no-audit --no-fund
-      - name: Run tests
+      - name: Run unit tests
+        working-directory: _yj_app
         run: npm test
-      - name: Build website
+      - name: Build production website
+        working-directory: _yj_app
         run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: _yj_app/dist
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -78,5 +112,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy website
+        id: deployment
         uses: actions/deploy-pages@v4
