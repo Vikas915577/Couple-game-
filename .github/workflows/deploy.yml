@@ -1,0 +1,66 @@
+name: Build and deploy YaarJam
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify uploaded ZIP
+        run: |
+          test -f YaarJam_Phone_Deploy_Bundle.zip
+          unzip -t YaarJam_Phone_Deploy_Bundle.zip
+      - name: Extract app source
+        run: |
+          unzip -q YaarJam_Phone_Deploy_Bundle.zip -d /tmp/yaarjam-bundle
+          test -f /tmp/yaarjam-bundle/YaarJam_V1/package.json
+          test -f /tmp/yaarjam-bundle/YaarJam_V1/src/main.tsx
+      - name: Install dependencies
+        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
+        run: npm install --no-audit --no-fund
+      - name: Run tests
+        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
+        run: npm test
+      - name: Build website
+        working-directory: /tmp/yaarjam-bundle/YaarJam_V1
+        run: npm run build
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Prepare website artifact
+        run: |
+          mkdir -p _site
+          cp -a /tmp/yaarjam-bundle/YaarJam_V1/dist/. _site/
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
