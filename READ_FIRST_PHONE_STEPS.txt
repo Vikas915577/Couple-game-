@@ -1,51 +1,31 @@
-YAARJAM V1.2 — ADULT HUB / COMPLETE SINGLE-ZIP RELEASE
-=====================================================
+YAARJAM V1.2 — FIX THE ZIP VERIFICATION ERROR
+================================================
 
-WHAT IS INCLUDED
-----------------
-- Current YaarJam code: room flow, Supabase client, Tic Tac Toe AI, Ludo, party games, Truth or Dare and RoomChat.
-- New Adults 18+ navigation section with a self-confirmation gate.
-- Two playable adult entries backed by existing Truth or Dare modes: Adult Truth or Dare and Couples After Dark.
-- Five clearly labelled, disabled Coming Soon previews; they cannot open empty rooms.
-- Adult prompt packs remain optional with an additional in-game confirmation. Skip/pass is always available.
-- New adult-hub unit tests.
-- Corrected GitHub Actions workflow text.
+Exact reason from the current failed workflow:
+It checks for YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip in the repo root, but that ZIP is not there. So it stops before extraction, tests, or build.
 
-THE ZIP HAS NO FOLDERS INSIDE IT
---------------------------------
-Every file is at the top level of this ZIP. GitHub Actions creates src/lib and src/components temporarily during build. No source files need to be individually uploaded.
+Better fix:
+The repo already has all V1.2 source files at its root. This workflow builds from those files directly, so no release ZIP upload is needed.
 
-PHONE DEPLOY STEPS — DO IN ORDER
---------------------------------
-STEP 1 — UPLOAD THIS ZIP
-1. Download this ZIP to your phone.
-2. Open https://github.com/Vikas915577/Couple-game-/upload/main
-3. Upload this ZIP itself to the repository root and commit to main.
-4. Keep the exact filename: YaarJam_V1_2_COMPLETE_NO_FOLDERS.zip
+PHONE STEPS:
+1. Open DEPLOY_WORKFLOW_CODE.txt and copy ALL its text.
+2. Open the existing GitHub workflow editor:
+   https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
+3. In the big editor, select all old text and replace it with the copied workflow.
+4. Commit changes on branch main.
+5. Open:
+   https://github.com/Vikas915577/Couple-game-/actions
+6. Open the newest run named "Build and deploy YaarJam V1.2 directly from repository".
 
-STEP 2 — REPLACE THE WORKFLOW
-1. Open DEPLOY_WORKFLOW_CODE.txt inside this ZIP and copy ALL of it.
-2. Open https://github.com/Vikas915577/Couple-game-/edit/main/.github/workflows/deploy.yml
-3. Select all old text in the editor, delete it, paste the copied workflow.
-4. Commit changes on main.
+Expected steps:
+- Restore source files from repository root
+- Verify all required source modules
+- Install dependencies
+- Run unit tests
+- Build production website
+- Deploy website
 
-STEP 3 — CHECK THE NEW RUN
-Open https://github.com/Vikas915577/Couple-game-/actions and open the newest run named "Test and deploy YaarJam V1.2 Adult Hub". ZIP verification, required-module verification, unit tests, production build and deploy must all pass.
-
-Uploading the ZIP first may trigger the OLD workflow; ignore that run. Replace deploy.yml next, then check the new named run.
-
-SUPABASE MIGRATION
-------------------
-SQL_v1_1_social_and_adult_packs.sql is included at the ZIP root. If that migration has not already been applied to your selected YaarJam Supabase project, run it once in Supabase SQL Editor AFTER the existing YaarJam V1 schema. It adds room chat, online Ludo state/RPCs and adult prompt packs. Do not use the Winter Arc project for YaarJam. Never put a service-role/secret key in browser code.
-
-HONEST VERIFICATION STATUS
---------------------------
-- Changed TypeScript/TSX files passed syntax parsing.
-- Adult-hub data check passed: 2 playable entries, 5 Coming Soon entries; all playable cards link to an existing playable game ID.
-- ZIP integrity and the no-folder layout are checked by the packaging script.
-- Local npm install timed out here. I am NOT claiming this exact V1.2 revision has passed npm test/build locally. GitHub Actions must pass before the website is confirmed.
-- After deployment, test room chat, Ludo, and shared Truth or Dare on two separate phones; green CI is not a substitute for that check.
-
-ADULT CONTENT NOTE
-------------------
-This is a self-confirmation gate, not legal identity verification. Adult packs require a separate in-game confirmation. Only adults should use adult prompts; ask before any touch-based dare, respect a no immediately, and never make private photos/personal data a challenge.
+Do NOT upload this ZIP to the repository. It only contains the replacement workflow text and instructions.
+No source files are deleted. The workflow creates src/lib and src/components only inside the GitHub Actions build runner, then builds the already-committed V1.2 files.
+The connected GitHub tool returned 403 when trying to commit the workflow directly, so the replacement still needs to be committed using GitHub's editor.
+Do not consider it fixed until the newest run is green and the published site opens.
