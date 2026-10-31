@@ -1,0 +1,11 @@
+{
+  "name": "YaarJam — Apne log. Apna game.",
+  "short_name": "YaarJam",
+  "description": "Offline-first couple, friends and party games.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11101c",
+  "theme_color": "#11101c",
+  "icons": [{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

@@ -1,14 +1,32 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#17152b" />
-    <meta name="description" content="YaarJam — play, laugh, and connect with your people." />
-    <title>YaarJam — Apne log. Apna game.</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#11101c">
+  <meta name="description" content="YaarJam — offline-first games for couples, friends and game nights.">
+  <title>YaarJam — Apne log. Apna game.</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-nav="home" aria-label="YaarJam home"><span class="brand-mark">Y</span><span><b>yaarjam</b><small>APNE LOG. APNA GAME.</small></span></button>
+      <div class="top-actions"><span class="offline-pill"><i></i> OFFLINE READY</span><button class="avatar-button" data-nav="profile" aria-label="Open profile"><span id="avatar-initial">Y</span></button></div>
+    </header>
+    <main id="app" tabindex="-1"></main>
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button data-nav="home" class="nav-item active"><span>⌂</span><small>Home</small></button>
+      <button data-nav="games" class="nav-item"><span>▦</span><small>Games</small></button>
+      <button data-nav="party" class="nav-item nav-play"><span>✦</span><small>Party</small></button>
+      <button data-nav="rewards" class="nav-item"><span>♛</span><small>Rewards</small></button>
+      <button data-nav="profile" class="nav-item"><span>◉</span><small>Profile</small></button>
+    </nav>
+  </div>
+  <div id="game-layer" class="game-layer" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
 </html>

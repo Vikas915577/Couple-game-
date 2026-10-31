@@ -1,40 +1,75 @@
-# YaarJam V1.1
+# YaarJam V2 — Offline-first release
 
-**Tagline:** Apne log. Apna game.
+**Tagline:** Apne log. Apna game.  
+**Version:** 2.0.0  
+**Architecture:** Static HTML + CSS + JavaScript. No backend, no Supabase, no Firebase, no login, no database server and no API keys.
 
-YaarJam is a mobile-first browser game hub built with React, TypeScript, Vite and Supabase. This V1.1 bundle preserves the V1 source and adds computer play, local party games, room chat and a pack-based Truth or Dare experience.
+## What this release includes
 
-## What's included
+### Phase 1 — Existing game upgrades
+- Truth or Dare: Friends and Couples packs, five intensity levels (Chill, Easy, Medium, Bold, Extreme), Truth/Dare switching, optional 18+ acknowledgement, pass/skip and a no-repeat prompt cycle.
+- Tic Tac Toe: same-phone two-player, computer opponent with Easy / Medium / Hard (minimax) and Best of 3 / 5 / 7 series.
+- Ludo: 2–4 player pass-the-phone, computer opponent, token launch on six, capture/safe cells, bonus turn and exact home movement.
+- Would You Rather / This or That: private turn-by-turn voting and reveal.
+- Never Have I Ever / Most Likely To: player rotation, private answers and result reveal.
+- Partner Quiz: private answer, partner guess and match scoring.
+- Our Story: memory prompts and locally saved round text.
+- Guess the Word: 30-second timer and round scoring.
+- Rock Paper Scissors: Best of 5 against the computer.
 
-- **Tic Tac Toe:** existing online rooms plus same-phone mode and Easy / Medium / Hard computer opponents. Hard uses minimax and should not lose when it plays correctly.
-- **Ludo:** local vs computer and 2–4 player pass-the-phone; online 2–4 player rooms with server-generated dice, server-validated token moves, capture/safe-square logic, realtime sync and host reset after the V1.1 SQL migration.
-- **Friends chat:** room-scoped text chat with a 500-character cap, recent history, realtime updates and a server-side send RPC with member checks/rate limit.
-- **Truth or Dare:** classic, funny, romantic, flirty, spicy (18+) and After Dark (18+) packs. The more mature packs are suggestive, not graphic; prompt skipping and partner comfort are always allowed.
-- **Party games:** Would You Rather, This or That, Never Have I Ever, Most Likely To, Guess the Word, Partner Quiz, Our Story Quiz and Rock Paper Scissors. These are playable locally / pass-the-phone; cross-phone synchronized voting for these party rounds is not claimed in this release.
-- **Room invitation:** existing code + invite link and the current lobby member list.
+### Phase 2 — Prompt library and custom decks
+- 381 built-in prompts and game items across Truth, Dare, Romantic, Flirty, Bold, After Dark, party questions, word clues, emoji puzzles, ranking, missions, scenarios and more.
+- Local custom Truth / Dare / Romantic / Flirty decks.
+- Custom Would You Rather prompts using `Option A | Option B` format.
+- Per-device no-repeat history for supported prompt games.
 
-## Important release setup
+### Phase 3 — Six new games
+1. Blind Ranking
+2. Secret Mission
+3. Emoji Decode
+4. Bluff Battle
+5. Couple Bingo
+6. Memory Match
 
-The project source lives under `src/`. For the ZIP-based mobile deployment flow, upload the **outer** `YaarJam_V1_1_Bundle.zip` to the root of the GitHub repository, then use the included `DEPLOY_WORKFLOW.txt` to replace `.github/workflows/deploy.yml`. GitHub Actions will extract the bundle, run `npm test`, run `npm run build`, and deploy the built `dist` folder to Pages.
+### Phase 4 — Six more new games
+7. Story Builder
+8. Date Night Generator
+9. Red Flag / Green Flag (two-player private reveal)
+10. Same Brain?
+11. 20 Questions (host-hidden mystery item)
+12. Reaction Battle (two-player timing round)
 
-After the build/deployment passes, apply **`supabase/v1_1_social_and_adult_packs.sql`** once in Supabase Dashboard → SQL Editor, after the existing V1 schema. This enables secure room chat, online Ludo and online prompt packs. Do not rerun the original full schema just to apply this upgrade.
+## Extra local features
+- Player profile, avatar and group names (2–10 for party games).
+- XP, levels, achievements, wins and recent game history.
+- Export / import JSON backup.
+- Installable PWA shell and cached static assets for offline reopening after first successful load.
+- Mobile-first layout; no remote font, image or script dependency.
 
-Dedicated Supabase project: `gvwmisqnepdlejhvacbm` (Vikas915577's Project). Do not switch YaarJam to the unrelated Winter Arc project. Browser configuration uses the public publishable key only. Never put a service-role / secret key in frontend code.
+## Deploy to the existing GitHub Pages repository
 
-## What is not claimed as finished
+This package is arranged to be copied into the **root** of `Vikas915577/Couple-game-`.
 
-- No voice chat in V1.1; text chat is included. Voice chat needs a separate WebRTC implementation and device/network testing.
-- Party game votes are local/pass-the-phone only; online synchronized party rounds are a later game-state migration.
-- Online multiplayer and cross-phone Ludo are enabled only after the V1.1 SQL migration is applied and two-to-four-device testing passes.
-- Browser-based build/test still needs a green GitHub Actions run for the exact uploaded ZIP; local npm installation in the preparation environment timed out because the registry was unreachable.
+1. Extract the ZIP.
+2. Upload/replace these files at the repository root: `index.html`, `styles.css`, `app.js`, `sw.js`, `manifest.json`, `assets/icon.svg`, and `tests-smoke.cjs`.
+3. Upload/replace `.github/workflows/deploy.yml` with the workflow included in this package.
+4. Keep the existing old source and SQL files in the repository; the new workflow deliberately builds only the static frontend files and does not install or call the old Supabase app.
+5. In GitHub → Settings → Pages, choose **GitHub Actions** as the deployment source.
+6. Open Actions and confirm the workflow is green. Then open the Pages site on Android Chrome and use **Add to Home screen** if you want an app-like shortcut.
 
-## Local commands
+No npm install, secrets, Supabase dashboard settings or SQL migration are required for this V2 static release.
 
-Node.js 22+ and npm 10+ are recommended.
+## Local test commands
 
 ```bash
-npm install
-npm test
-npm run build
-npm run dev
+node --check app.js
+node --check sw.js
+node tests-smoke.cjs
 ```
+
+## Data and limitations
+
+- Profile, XP, custom decks and history stay in the browser's `localStorage`. Clearing browser data may erase them; use Profile → Export backup.
+- Multiplayer means same-device pass-the-phone or local-vs-computer. There is no cross-phone live sync, shared room, voice/text chat or central leaderboard.
+- The After Dark 18+ prompt selection is only a front-end acknowledgement, not age verification.
+- Automated source/interaction smoke tests pass in this package. Final Android device testing after GitHub Pages deployment is still recommended.

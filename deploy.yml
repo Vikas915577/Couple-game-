@@ -1,4 +1,4 @@
-name: Build and deploy YaarJam
+name: Deploy YaarJam V2 Offline
 
 on:
   push:
@@ -18,52 +18,41 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Node.js 22
+
+      - name: Set up Node.js for source validation
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Restore the expected src folder structure
+
+      - name: Validate frontend-only app
         run: |
           set -eu
-          mkdir -p src/lib src/components
-          cp App.tsx src/App.tsx
-          cp main.tsx src/main.tsx
-          cp styles.css src/styles.css
-          cp catalog.ts src/catalog.ts
-          cp catalog.test.ts src/catalog.test.ts
-          cp vite-env.d.ts src/vite-env.d.ts
-          cp supabase.ts src/lib/supabase.ts
-          cp rooms.ts src/lib/rooms.ts
-          cp tic-tac-toe.ts src/lib/tic-tac-toe.ts
-          cp tic-tac-toe-online.ts src/lib/tic-tac-toe-online.ts
-          cp tic-tac-toe.test.ts src/lib/tic-tac-toe.test.ts
-          cp tic-tac-toe-ai.ts src/lib/tic-tac-toe-ai.ts
-          cp tic-tac-toe-ai.test.ts src/lib/tic-tac-toe-ai.test.ts
-          cp ludo.ts src/lib/ludo.ts
-          cp ludo.test.ts src/lib/ludo.test.ts
-          cp ludo-online.ts src/lib/ludo-online.ts
-          cp ludo-online.test.ts src/lib/ludo-online.test.ts
-          cp party-prompts.ts src/lib/party-prompts.ts
-          cp party-prompts.test.ts src/lib/party-prompts.test.ts
-          cp truth-or-dare.ts src/lib/truth-or-dare.ts
-          cp truth-or-dare-online.ts src/lib/truth-or-dare-online.ts
-          cp truth-or-dare.test.ts src/lib/truth-or-dare.test.ts
-          cp truth-or-dare-online.test.ts src/lib/truth-or-dare-online.test.ts
-          cp RoomChat.tsx src/components/RoomChat.tsx
-          cp LocalPartyGamePanel.tsx src/components/LocalPartyGamePanel.tsx
-          cp LudoPanel.tsx src/components/LudoPanel.tsx
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Run unit tests
-        run: npm test
-      - name: Build production website
-        run: npm run build
+          test -s index.html
+          test -s styles.css
+          test -s app.js
+          test -s sw.js
+          test -s manifest.json
+          test -s assets/icon.svg
+          node --check app.js
+          node --check sw.js
+          node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8'))"
+          node tests-smoke.cjs
+
+      - name: Prepare static Pages artifact
+        run: |
+          set -eu
+          rm -rf _site
+          mkdir -p _site/assets
+          cp index.html styles.css app.js sw.js manifest.json _site/
+          cp assets/icon.svg _site/assets/icon.svg
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./_site
 
   deploy:
     needs: build
